@@ -1,7 +1,6 @@
 import React from 'react';
 import { PanelCard } from './ui/PanelCard';
 import { StatusPill, type PillTone } from './ui/StatusPill';
-import { MetricBar } from './ui/MetricBar';
 import {
   DEFAULT_THRESHOLDS,
   type TelemetrySnapshot,
@@ -31,13 +30,10 @@ export const TemperatureCard: React.FC<TemperatureCardProps> = ({ snapshot }) =>
   const { temperatureC, temperatureFault } = snapshot;
   const status = formatTempStatus(temperatureFault);
 
-  const barPercent =
+  const markerPercent =
     temperatureC === null
       ? 0
       : Math.max(0, Math.min(100, (temperatureC / DEFAULT_THRESHOLDS.tempMaxScaleC) * 100));
-
-  const warnMarker = (DEFAULT_THRESHOLDS.tempWarnC / DEFAULT_THRESHOLDS.tempMaxScaleC) * 100;
-  const critMarker = (DEFAULT_THRESHOLDS.tempCritC / DEFAULT_THRESHOLDS.tempMaxScaleC) * 100;
 
   return (
     <PanelCard
@@ -57,15 +53,15 @@ export const TemperatureCard: React.FC<TemperatureCardProps> = ({ snapshot }) =>
         </div>
 
         <div className="bar-section">
-          <MetricBar
-            percent={barPercent}
-            tone={status.tone === 'go' ? 'go' : status.tone}
-            height={10}
-            markers={[
-              { percent: warnMarker, tone: 'warn', title: `Hot ${DEFAULT_THRESHOLDS.tempWarnC}°C` },
-              { percent: critMarker, tone: 'danger', title: `Limit ${DEFAULT_THRESHOLDS.tempCritC}°C` },
-            ]}
-          />
+          <div className="thermal-spectrum">
+            <div className="thermal-gradient" />
+            {temperatureC !== null && (
+              <span
+                className="thermal-pointer"
+                style={{ left: `${markerPercent}%` }}
+              />
+            )}
+          </div>
           <div className="scale-caption num">
             <span>Safe</span>
             <span>Hot {DEFAULT_THRESHOLDS.tempWarnC}°</span>

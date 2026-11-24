@@ -1,6 +1,5 @@
 import React from 'react';
 import { PanelCard } from './ui/PanelCard';
-import { MetricBar } from './ui/MetricBar';
 import type { TelemetrySnapshot, ThrottleAuthority } from '../telemetry/telemetryTypes';
 
 export interface ThrottleCardProps {
@@ -42,25 +41,37 @@ export const ThrottleCard: React.FC<ThrottleCardProps> = ({
         </div>
 
         <div className="bar-section">
-          <MetricBar
-            percent={snapshot.throttlePercent}
-            tone={isScreenControl ? 'warn' : 'accent'}
-            height={10}
-          />
-          <input
-            type="range"
-            className="tactical-slider"
-            min={snapshot.knobIdleUs}
-            max={snapshot.throttleMaxUs}
-            step={5}
-            value={snapshot.throttleUs}
-            disabled={sliderDisabled}
-            onChange={(event) => onSetThrottleUs(Number(event.target.value))}
-            aria-label="Throttle level"
-            data-testid="throttle-slider"
-          />
+          <div className="ruler-slider-shell">
+            <div
+              className={
+                isScreenControl ? 'ruler-fill ruler-fill-warn' : 'ruler-fill ruler-fill-accent'
+              }
+              style={{ width: `${snapshot.throttlePercent}%` }}
+            />
+            <div className="ruler-ticks" aria-hidden="true">
+              {Array.from({ length: 21 }).map((_, idx) => (
+                <span
+                  key={idx}
+                  className={idx % 5 === 0 ? 'ruler-tick is-major' : 'ruler-tick'}
+                />
+              ))}
+            </div>
+            <input
+              type="range"
+              className="ruler-input"
+              min={snapshot.knobIdleUs}
+              max={snapshot.throttleMaxUs}
+              step={5}
+              value={snapshot.throttleUs}
+              disabled={sliderDisabled}
+              onChange={(event) => onSetThrottleUs(Number(event.target.value))}
+              aria-label="Throttle level"
+              data-testid="throttle-slider"
+            />
+          </div>
           <div className="scale-caption">
             <span>Idle</span>
+            <span>50%</span>
             <span>Full</span>
           </div>
         </div>

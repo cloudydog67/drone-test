@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import {
+  Area,
+  AreaChart,
   CartesianGrid,
-  Line,
-  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -30,9 +30,9 @@ const METRIC_OPTIONS: {
   color: string;
   max: number;
 }[] = [
-  { key: 'rpm', label: 'RPM', unit: 'RPM', color: '#3b82f6', max: DEFAULT_THRESHOLDS.rpmMaxScale },
+  { key: 'rpm', label: 'RPM', unit: 'RPM', color: '#38bdf8', max: DEFAULT_THRESHOLDS.rpmMaxScale },
   { key: 'speedKmh', label: 'Speed', unit: 'km/h', color: '#e5e7eb', max: DEFAULT_THRESHOLDS.speedMaxKmh },
-  { key: 'temperatureC', label: 'Temp', unit: '°C', color: '#eab308', max: DEFAULT_THRESHOLDS.tempMaxScaleC },
+  { key: 'temperatureC', label: 'Temp', unit: '°C', color: '#f59e0b', max: DEFAULT_THRESHOLDS.tempMaxScaleC },
   { key: 'throttlePercent', label: 'Throttle', unit: '%', color: '#22c55e', max: 100 },
 ];
 
@@ -43,25 +43,35 @@ export const TelemetryTrendChart: React.FC<TelemetryTrendChartProps> = ({
 }) => {
   const [selectedMetric, setSelectedMetric] = useState<ChartMetric>('rpm');
   const active = METRIC_OPTIONS.find((item) => item.key === selectedMetric) ?? METRIC_OPTIONS[0];
+  const latestPoint = history[history.length - 1];
+  const latestRaw = latestPoint ? latestPoint[active.key] : 0;
+  const latestDisplay =
+    latestRaw === null
+      ? '--'
+      : active.key === 'rpm'
+      ? Math.round(latestRaw).toLocaleString()
+      : Number(latestRaw).toFixed(active.key === 'throttlePercent' ? 0 : 1);
 
   return (
     <PanelCard
-      title="Live Graph"
+      title={`Live Graph · ${latestDisplay} ${active.unit}`}
       testId="telemetry-chart-card"
       badge={
         <div className="chart-toolbar">
-          {METRIC_OPTIONS.map((option) => (
-            <button
-              key={option.key}
-              type="button"
-              className={
-                selectedMetric === option.key ? 'series-chip is-selected' : 'series-chip'
-              }
-              onClick={() => setSelectedMetric(option.key)}
-            >
-              {option.label}
-            </button>
-          ))}
+          <div className="chart-tabs">
+            {METRIC_OPTIONS.map((option) => (
+              <button
+                key={option.key}
+                type="button"
+                className={
+                  selectedMetric === option.key ? 'series-chip is-selected' : 'series-chip'
+                }
+                onClick={() => setSelectedMetric(option.key)}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
           <button
             type="button"
             className="chart-pause-btn"
@@ -76,41 +86,51 @@ export const TelemetryTrendChart: React.FC<TelemetryTrendChartProps> = ({
     >
       <div className="chart-container">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={history} margin={{ top: 10, right: 16, left: -4, bottom: 0 }}>
-            <CartesianGrid stroke="#252830" strokeDasharray="3 3" vertical={false} />
+          <AreaChart data={history} margin={{ top: 12, right: 16, left: -6, bottom: 0 }}>
+            <defs>
+              <linearGradient id="metricAreaFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={active.color} stopOpacity={0.32} />
+                <stop offset="100%" stopColor={active.color} stopOpacity={0.01} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid stroke="#222630" strokeDasharray="3 3" vertical={false} />
             <XAxis
               dataKey="timeLabel"
-              stroke="#6b7280"
+              stroke="#4b5563"
               tick={{ fill: '#9ca3af', fontSize: 12, fontFamily: 'Inter, Segoe UI, sans-serif' }}
               minTickGap={34}
+              tickLine={false}
             />
             <YAxis
               domain={[0, active.max]}
-              stroke="#6b7280"
+              stroke="#4b5563"
               tick={{ fill: '#9ca3af', fontSize: 12, fontFamily: 'Inter, Segoe UI, sans-serif' }}
               width={48}
+              tickLine={false}
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: '#16181d',
-                border: '1px solid #303540',
-                borderRadius: 8,
+                backgroundColor: '#121418',
+                border: '1px solid #303643',
+                borderRadius: 10,
                 fontSize: 13,
                 fontFamily: 'Inter, Segoe UI, sans-serif',
                 color: '#f9fafb',
+                boxShadow: '0 10px 28px rgba(0, 0, 0, 0.45)',
               }}
               formatter={(value) => [`${value} ${active.unit}`, active.label]}
             />
-            <Line
+            <Area
               type="monotone"
               dataKey={active.key}
               name={active.label}
               stroke={active.color}
-              strokeWidth={2.8}
+              strokeWidth={2.6}
+              fill="url(#metricAreaFill)"
               dot={false}
               isAnimationActive={false}
             />
-          </LineChart>
+          </AreaChart>
         </ResponsiveContainer>
       </div>
     </PanelCard>

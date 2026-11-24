@@ -1,5 +1,5 @@
 import React from 'react';
-import { Flame, Lock, Unlock, Zap } from 'lucide-react';
+import { Check, Flame, Lock, Unlock, Zap } from 'lucide-react';
 import { PanelCard } from './ui/PanelCard';
 import { MomentaryButton } from './ui/MomentaryButton';
 import type { TelemetrySnapshot, TelemetrySource } from '../telemetry/telemetryTypes';
@@ -52,19 +52,23 @@ export const EngineControlDeck: React.FC<EngineControlDeckProps> = ({
             onClick={onToggleArm}
           >
             <div className="step-head">
-              <span className="step-num">1</span>
-              {interlocks.armed ? <Unlock size={16} /> : <Lock size={16} />}
+              <span className={interlocks.armed ? 'step-num is-done' : 'step-num'}>
+                {interlocks.armed ? <Check size={13} /> : '1'}
+              </span>
+              {interlocks.armed ? <Unlock size={17} /> : <Lock size={17} />}
             </div>
-            <span className="step-title">
-              {interlocks.armed ? 'Unlocked' : 'Unlock'}
-            </span>
-            <span className="step-hint">
-              {interlocks.armed
-                ? 'Tap to lock'
-                : !interlocks.knobAtIdle
-                ? 'Set handle to 0%'
-                : 'Ready to unlock'}
-            </span>
+            <div className="step-copy">
+              <span className="step-title">
+                {interlocks.armed ? 'Unlocked' : 'Unlock'}
+              </span>
+              <span className="step-hint">
+                {interlocks.armed
+                  ? 'Tap to lock'
+                  : !interlocks.knobAtIdle
+                  ? 'Set handle to 0%'
+                  : 'Ready to unlock'}
+              </span>
+            </div>
           </button>
 
           <button
@@ -75,15 +79,19 @@ export const EngineControlDeck: React.FC<EngineControlDeckProps> = ({
             onClick={onToggleIgnition}
           >
             <div className="step-head">
-              <span className="step-num">2</span>
-              <Flame size={16} />
+              <span className={interlocks.ignitionOn ? 'step-num is-warn-done' : 'step-num'}>
+                {interlocks.ignitionOn ? <Check size={13} /> : '2'}
+              </span>
+              <Flame size={17} />
             </div>
-            <span className="step-title">
-              {interlocks.ignitionOn ? 'Ignition On' : 'Ignition Off'}
-            </span>
-            <span className="step-hint">
-              {interlocks.ignitionOn ? 'Tap to stop engine' : 'Unlock first'}
-            </span>
+            <div className="step-copy">
+              <span className="step-title">
+                {interlocks.ignitionOn ? 'Ignition On' : 'Ignition Off'}
+              </span>
+              <span className="step-hint">
+                {interlocks.ignitionOn ? 'Tap to stop engine' : 'Unlock first'}
+              </span>
+            </div>
           </button>
 
           <MomentaryButton
@@ -96,12 +104,14 @@ export const EngineControlDeck: React.FC<EngineControlDeckProps> = ({
           >
             <div className="step-head">
               <span className="step-num">3</span>
-              <Zap size={16} />
+              <Zap size={17} />
             </div>
-            <span className="step-title">
-              {interlocks.starterCranking ? 'Starting...' : 'Hold to Start'}
-            </span>
-            <span className="step-hint">Release when running</span>
+            <div className="step-copy">
+              <span className="step-title">
+                {interlocks.starterCranking ? 'Starting...' : 'Hold to Start'}
+              </span>
+              <span className="step-hint">Release when running</span>
+            </div>
           </MomentaryButton>
         </div>
 

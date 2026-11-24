@@ -29,27 +29,31 @@ function formatDuration(totalSeconds: number): string {
 function getOverallStatus(
   snapshot: TelemetrySnapshot,
   watchdogStale: boolean
-): { label: string; dotClass: string } {
+): { label: string; tone: 'go' | 'warn' | 'danger' | 'neutral' } {
   if (snapshot.interlocks.estopLatched) {
-    return { label: 'Emergency Stopped', dotClass: 'dot dot-danger' };
+    return { label: 'Emergency Stopped', tone: 'danger' };
   }
   if (watchdogStale || !snapshot.interlocks.edgeLinkOnline) {
-    return { label: 'Signal Lost', dotClass: 'dot dot-danger' };
+    return { label: 'Signal Lost', tone: 'danger' };
   }
   if (
     snapshot.temperatureFault === 'OVERHEAT' ||
     snapshot.temperatureFault === 'OPEN_PROBE' ||
     snapshot.temperatureFault === 'REVERSED_POLARITY'
   ) {
-    return { label: 'Temp Warning', dotClass: 'dot dot-danger' };
+    return { label: 'Temp Warning', tone: 'danger' };
   }
-  if (snapshot.enginePhase === 'RUNNING' || snapshot.enginePhase === 'IDLE' || snapshot.enginePhase === 'WOT') {
-    return { label: 'Engine Running', dotClass: 'dot dot-go' };
+  if (
+    snapshot.enginePhase === 'RUNNING' ||
+    snapshot.enginePhase === 'IDLE' ||
+    snapshot.enginePhase === 'WOT'
+  ) {
+    return { label: 'Engine Running', tone: 'go' };
   }
   if (snapshot.interlocks.armed) {
-    return { label: 'Ready to Start', dotClass: 'dot dot-warn' };
+    return { label: 'Ready to Start', tone: 'warn' };
   }
-  return { label: 'Standby', dotClass: 'dot dot-go' };
+  return { label: 'Standby', tone: 'go' };
 }
 
 export const CommandHeader: React.FC<CommandHeaderProps> = ({
@@ -70,7 +74,24 @@ export const CommandHeader: React.FC<CommandHeaderProps> = ({
   return (
     <header className="command-header" data-testid="command-header">
       <div className="header-group">
-        <span className="app-title">Drone Engine Monitor</span>
+        <div className="brand-lockup">
+          <div className="brand-mark" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="3.2" stroke="currentColor" strokeWidth="1.8" />
+              <path
+                d="M3.5 12h4.2M16.3 12h4.2M12 3.5v4.2M12 16.3v4.2"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
+              <circle cx="4.5" cy="4.5" r="2" fill="currentColor" opacity="0.65" />
+              <circle cx="19.5" cy="4.5" r="2" fill="currentColor" opacity="0.65" />
+              <circle cx="4.5" cy="19.5" r="2" fill="currentColor" opacity="0.65" />
+              <circle cx="19.5" cy="19.5" r="2" fill="currentColor" opacity="0.65" />
+            </svg>
+          </div>
+          <span className="app-title">Drone Engine Monitor</span>
+        </div>
 
         <div className="source-switch" role="group" aria-label="Mode">
           <button
@@ -89,8 +110,8 @@ export const CommandHeader: React.FC<CommandHeaderProps> = ({
           </button>
         </div>
 
-        <div className="overall-status" data-testid="watchdog-status">
-          <span className={overall.dotClass} />
+        <div className={`overall-status status-${overall.tone}`} data-testid="watchdog-status">
+          <span className={`dot dot-${overall.tone}`} />
           <span>{overall.label}</span>
         </div>
       </div>
@@ -108,8 +129,10 @@ export const CommandHeader: React.FC<CommandHeaderProps> = ({
           onClick={onToggleRecord}
           data-testid="record-csv-btn"
         >
-          {recording ? <Square size={13} /> : <Circle size={13} />}
-          <span className="num">{recording ? `Recording ${formatDuration(recordingSeconds)}` : 'Record'}</span>
+          {recording ? <Square size={12} /> : <Circle size={12} />}
+          <span className="num">
+            {recording ? `Recording ${formatDuration(recordingSeconds)}` : 'Record'}
+          </span>
         </button>
 
         {snapshot.interlocks.estopLatched && (
