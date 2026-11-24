@@ -53,9 +53,9 @@ export const RpmGaugeCard: React.FC<RpmGaugeCardProps> = ({ snapshot }) => {
   const inRedline = snapshot.rpm >= redline;
   const phase = formatPhase(snapshot.enginePhase);
 
-  const needleTip = polar(needleAngle, 75);
-  const needleBaseL = polar(needleAngle - 9, 57);
-  const needleBaseR = polar(needleAngle + 9, 57);
+  const needleTip = polar(needleAngle, 77);
+  const needleBaseL = polar(needleAngle - 3.2, 57);
+  const needleBaseR = polar(needleAngle + 3.2, 57);
   const peakOuter = polar(peakAngle, 96);
   const peakInner = polar(peakAngle, 84);
 
