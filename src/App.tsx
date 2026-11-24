@@ -4,6 +4,8 @@ import { RpmGaugeCard } from './components/RpmGaugeCard';
 import { SpeedCard } from './components/SpeedCard';
 import { TemperatureCard } from './components/TemperatureCard';
 import { ThrottleCard } from './components/ThrottleCard';
+import { FuelCard } from './components/FuelCard';
+import { WindCard } from './components/WindCard';
 import { GpsStatusCard } from './components/GpsStatusCard';
 import { TelemetryTrendChart } from './components/TelemetryTrendChart';
 import { EngineControlDeck } from './components/EngineControlDeck';
@@ -53,7 +55,6 @@ export function App() {
               sendCommand({ type: 'SET_THROTTLE_US', microseconds })
             }
           />
-          <GpsStatusCard snapshot={snapshot} />
         </section>
 
         <section className="operations-row">
@@ -62,6 +63,15 @@ export function App() {
             paused={chartPaused}
             onTogglePause={toggleChartPaused}
           />
+
+          <div className="middle-stack">
+            <div className="env-pair-row">
+              <FuelCard snapshot={snapshot} />
+              <WindCard snapshot={snapshot} />
+            </div>
+            <GpsStatusCard snapshot={snapshot} />
+          </div>
+
           <EngineControlDeck
             snapshot={snapshot}
             sourceMode={sourceMode}

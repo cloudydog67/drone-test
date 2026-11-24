@@ -26,6 +26,10 @@ export class SimulatedEspTransport implements EspTelemetryTransport {
   private speedKmh = 0;
   private temperatureC = 28.4;
   private temperatureTrendCPerSec = 0;
+  private fuelPercent = 86;
+  private windSpeedKmh = 12.4;
+  private windDirectionDegrees = 315;
+  private windPhase = 0;
 
   private knobIdleUs = 1050;
   private throttleMaxUs = 1950;
@@ -80,14 +84,14 @@ export class SimulatedEspTransport implements EspTelemetryTransport {
         this.knobUs = this.knobIdleUs;
         this.throttleAuthority = 'HW_KNOB';
         this.crankElapsedSeconds = 0;
-        return { accepted: true, reason: 'E-STOP EXECUTED: IGN OFF + IDLE' };
+        return { accepted: true, reason: 'Emergency stop activated' };
 
       case 'CLEAR_ESTOP':
         if (!this.isKnobAtIdle()) {
-          return { accepted: false, reason: 'RETURN KNOB TO IDLE FIRST' };
+          return { accepted: false, reason: 'Set throttle handle to 0% first' };
         }
         this.estopLatched = false;
-        return { accepted: true, reason: 'E-STOP CLEARED' };
+        return { accepted: true, reason: 'Reset complete' };
 
       case 'SET_ARMED':
         if (!command.armed) {
@@ -95,60 +99,63 @@ export class SimulatedEspTransport implements EspTelemetryTransport {
           this.ignitionOn = false;
           this.starterCranking = false;
           this.engineRunning = false;
-          return { accepted: true, reason: 'DISARMED' };
+          return { accepted: true, reason: 'Controls locked' };
         }
         if (this.estopLatched) {
-          return { accepted: false, reason: 'E-STOP LATCHED' };
+          return { accepted: false, reason: 'Reset emergency stop first' };
         }
         if (!this.edgeLinkOnline) {
-          return { accepted: false, reason: 'EDGE LINK OFFLINE' };
+          return { accepted: false, reason: 'Engine signal lost' };
         }
         if (!this.isKnobAtIdle()) {
-          return { accepted: false, reason: 'KNOB ABOVE IDLE INTERLOCK' };
+          return { accepted: false, reason: 'Set throttle handle to 0% first' };
         }
         this.armed = true;
-        return { accepted: true, reason: 'SYSTEM ARMED' };
+        return { accepted: true, reason: 'Controls unlocked' };
 
       case 'SET_IGNITION':
         if (command.on) {
           if (!this.armed || this.estopLatched) {
-            return { accepted: false, reason: 'ARM SYSTEM BEFORE IGN ON' };
+            return { accepted: false, reason: 'Unlock controls first' };
+          }
+          if (this.fuelPercent <= 0) {
+            return { accepted: false, reason: 'Fuel tank empty' };
           }
           this.ignitionOn = true;
-          return { accepted: true, reason: 'IGNITION ON' };
+          return { accepted: true, reason: 'Ignition on' };
         }
         this.ignitionOn = false;
         this.engineRunning = false;
-        return { accepted: true, reason: 'IGNITION OFF' };
+        return { accepted: true, reason: 'Ignition off' };
 
       case 'SET_STARTER':
         if (command.active) {
           if (!this.armed || this.estopLatched) {
-            return { accepted: false, reason: 'ARM SYSTEM BEFORE CRANK' };
+            return { accepted: false, reason: 'Unlock controls first' };
           }
           this.starterCranking = true;
-          return { accepted: true, reason: 'CRANKING' };
+          return { accepted: true, reason: 'Starting' };
         }
         this.starterCranking = false;
         this.crankElapsedSeconds = 0;
-        return { accepted: true, reason: 'STARTER IDLE' };
+        return { accepted: true, reason: 'Starter released' };
 
       case 'SET_THROTTLE_AUTHORITY':
         this.throttleAuthority = command.authority;
         if (command.authority === 'SW_OVERRIDE') {
           this.softwareThrottleUs = this.knobUs;
         }
-        return { accepted: true, reason: `THROTTLE ${command.authority}` };
+        return { accepted: true, reason: 'Throttle mode updated' };
 
       case 'SET_THROTTLE_US': {
         if (this.throttleAuthority !== 'SW_OVERRIDE' || !this.armed || this.estopLatched) {
-          return { accepted: false, reason: 'SW THROTTLE LOCKED' };
+          return { accepted: false, reason: 'Unlock controls to move throttle' };
         }
         this.softwareThrottleUs = Math.max(
           this.knobIdleUs,
           Math.min(this.throttleMaxUs, Math.round(command.microseconds))
         );
-        return { accepted: true, reason: `THR ${this.softwareThrottleUs} US` };
+        return { accepted: true, reason: 'Throttle updated' };
       }
 
       case 'SET_SIM_KNOB_US':
@@ -156,14 +163,14 @@ export class SimulatedEspTransport implements EspTelemetryTransport {
           this.knobIdleUs,
           Math.min(this.throttleMaxUs, Math.round(command.microseconds))
         );
-        return { accepted: true, reason: `KNOB ${this.knobUs} US` };
+        return { accepted: true, reason: 'Handle moved' };
 
       case 'RESET_PEAK_RPM':
         this.peakRpm = this.rpm;
-        return { accepted: true, reason: 'PEAK RPM RESET' };
+        return { accepted: true, reason: 'Peak RPM reset' };
 
       case 'RAW_SERIAL':
-        return { accepted: true, reason: `SIM RX: ${command.line}` };
+        return { accepted: true, reason: command.line };
     }
   }
 
@@ -185,20 +192,27 @@ export class SimulatedEspTransport implements EspTelemetryTransport {
       }
     }
 
+    if (this.fuelPercent <= 0) {
+      this.engineRunning = false;
+    }
+
     if (this.starterCranking && !this.engineRunning) {
       const targetCrank = 540 + (Math.random() - 0.5) * 35;
       this.rpm += (targetCrank - this.rpm) * Math.min(1, dt * 6);
-      if (this.ignitionOn && this.crankElapsedSeconds >= 0.75) {
+      if (this.ignitionOn && this.fuelPercent > 0 && this.crankElapsedSeconds >= 0.75) {
         this.engineRunning = true;
         this.rpm = 1750;
       }
-    } else if (this.engineRunning && this.ignitionOn) {
+    } else if (this.engineRunning && this.ignitionOn && this.fuelPercent > 0) {
       const targetRpm = 1920 + Math.pow(throttlePct / 100, 0.92) * 6500;
       const vibration = Math.sin(now * 0.025) * 18 + (Math.random() - 0.5) * 24;
       const responseRate = targetRpm > this.rpm ? 2.8 : 2.0;
       this.rpm += (targetRpm - this.rpm) * Math.min(1, dt * responseRate) + vibration * dt * 6;
       this.rpm = Math.max(1650, this.rpm);
       this.runTimeSeconds += dt;
+
+      const burnPerSec = 0.012 + (throttlePct / 100) * 0.065;
+      this.fuelPercent = Math.max(0, this.fuelPercent - burnPerSec * dt);
     } else {
       this.engineRunning = false;
       this.rpm = Math.max(0, this.rpm - (1500 + this.rpm * 1.45) * dt);
@@ -221,6 +235,13 @@ export class SimulatedEspTransport implements EspTelemetryTransport {
     this.temperatureC +=
       (targetTemp - this.temperatureC) * Math.min(1, dt * tempRate) + (Math.random() - 0.5) * 0.12;
     this.temperatureTrendCPerSec = (this.temperatureC - prevTemp) / dt;
+
+    this.windPhase += dt;
+    const targetWind =
+      14.0 + Math.sin(this.windPhase * 0.35) * 4.5 + Math.sin(this.windPhase * 1.1) * 1.8;
+    this.windSpeedKmh += (targetWind - this.windSpeedKmh) * Math.min(1, dt * 1.6);
+    this.windDirectionDegrees =
+      (315 + Math.round(Math.sin(this.windPhase * 0.2) * 14) + 360) % 360;
 
     if (this.speedKmh > 1) {
       this.headingDegrees = (this.headingDegrees + dt * 3.5) % 360;
@@ -278,6 +299,9 @@ export class SimulatedEspTransport implements EspTelemetryTransport {
       knobIdleUs: this.knobIdleUs,
       throttleMaxUs: this.throttleMaxUs,
       throttleAuthority: this.throttleAuthority,
+      fuelPercent: Math.round(this.fuelPercent * 10) / 10,
+      windSpeedKmh: Math.round(this.windSpeedKmh * 10) / 10,
+      windDirectionDegrees: this.windDirectionDegrees,
       gps: {
         fix: '3D_FIX',
         satellites: 14,
@@ -309,6 +333,6 @@ export class PassiveEspTransport implements EspTelemetryTransport {
   stop(): void {}
 
   sendCommand(command: TelemetryCommand): CommandAck {
-    return { accepted: false, reason: `AWAITING ESP32 LINK (${command.type})` };
+    return { accepted: false, reason: `Waiting for ESP32 (${command.type})` };
   }
 }

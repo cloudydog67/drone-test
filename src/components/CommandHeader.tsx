@@ -43,6 +43,12 @@ function getOverallStatus(
   ) {
     return { label: 'Temp Warning', tone: 'danger' };
   }
+  if (snapshot.fuelPercent <= DEFAULT_THRESHOLDS.fuelCritPercent) {
+    return { label: 'Fuel Critical', tone: 'danger' };
+  }
+  if (snapshot.windSpeedKmh >= DEFAULT_THRESHOLDS.windHighKmh) {
+    return { label: 'High Wind Warning', tone: 'danger' };
+  }
   if (
     snapshot.enginePhase === 'RUNNING' ||
     snapshot.enginePhase === 'IDLE' ||

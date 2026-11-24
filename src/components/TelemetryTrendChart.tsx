@@ -21,7 +21,13 @@ export interface TelemetryTrendChartProps {
   onTogglePause: () => void;
 }
 
-type ChartMetric = 'rpm' | 'speedKmh' | 'temperatureC' | 'throttlePercent';
+type ChartMetric =
+  | 'rpm'
+  | 'speedKmh'
+  | 'temperatureC'
+  | 'throttlePercent'
+  | 'fuelPercent'
+  | 'windSpeedKmh';
 
 const METRIC_OPTIONS: {
   key: ChartMetric;
@@ -34,6 +40,8 @@ const METRIC_OPTIONS: {
   { key: 'speedKmh', label: 'Speed', unit: 'km/h', color: '#e5e7eb', max: DEFAULT_THRESHOLDS.speedMaxKmh },
   { key: 'temperatureC', label: 'Temp', unit: '°C', color: '#f59e0b', max: DEFAULT_THRESHOLDS.tempMaxScaleC },
   { key: 'throttlePercent', label: 'Throttle', unit: '%', color: '#22c55e', max: 100 },
+  { key: 'fuelPercent', label: 'Fuel', unit: '%', color: '#34d399', max: 100 },
+  { key: 'windSpeedKmh', label: 'Wind', unit: 'km/h', color: '#60a5fa', max: DEFAULT_THRESHOLDS.windMaxScaleKmh },
 ];
 
 export const TelemetryTrendChart: React.FC<TelemetryTrendChartProps> = ({
@@ -50,7 +58,9 @@ export const TelemetryTrendChart: React.FC<TelemetryTrendChartProps> = ({
       ? '--'
       : active.key === 'rpm'
       ? Math.round(latestRaw).toLocaleString()
-      : Number(latestRaw).toFixed(active.key === 'throttlePercent' ? 0 : 1);
+      : Number(latestRaw).toFixed(
+          active.key === 'throttlePercent' || active.key === 'fuelPercent' ? 0 : 1
+        );
 
   return (
     <PanelCard
@@ -79,14 +89,13 @@ export const TelemetryTrendChart: React.FC<TelemetryTrendChartProps> = ({
             aria-label={paused ? 'Resume graph' : 'Pause graph'}
           >
             {paused ? <Play size={12} /> : <Pause size={12} />}
-            <span>{paused ? 'Resume' : 'Pause'}</span>
           </button>
         </div>
       }
     >
       <div className="chart-container">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={history} margin={{ top: 12, right: 16, left: -6, bottom: 0 }}>
+          <AreaChart data={history} margin={{ top: 12, right: 14, left: -8, bottom: 0 }}>
             <defs>
               <linearGradient id="metricAreaFill" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={active.color} stopOpacity={0.32} />
@@ -97,15 +106,15 @@ export const TelemetryTrendChart: React.FC<TelemetryTrendChartProps> = ({
             <XAxis
               dataKey="timeLabel"
               stroke="#4b5563"
-              tick={{ fill: '#9ca3af', fontSize: 12, fontFamily: 'Inter, Segoe UI, sans-serif' }}
+              tick={{ fill: '#9ca3af', fontSize: 11, fontFamily: 'Inter, Segoe UI, sans-serif' }}
               minTickGap={34}
               tickLine={false}
             />
             <YAxis
               domain={[0, active.max]}
               stroke="#4b5563"
-              tick={{ fill: '#9ca3af', fontSize: 12, fontFamily: 'Inter, Segoe UI, sans-serif' }}
-              width={48}
+              tick={{ fill: '#9ca3af', fontSize: 11, fontFamily: 'Inter, Segoe UI, sans-serif' }}
+              width={44}
               tickLine={false}
             />
             <Tooltip
@@ -125,7 +134,7 @@ export const TelemetryTrendChart: React.FC<TelemetryTrendChartProps> = ({
               dataKey={active.key}
               name={active.label}
               stroke={active.color}
-              strokeWidth={2.6}
+              strokeWidth={2.5}
               fill="url(#metricAreaFill)"
               dot={false}
               isAnimationActive={false}

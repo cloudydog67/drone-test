@@ -35,19 +35,23 @@ export const GpsStatusCard: React.FC<GpsStatusCardProps> = ({ snapshot }) => {
     <PanelCard
       title="GPS"
       testId="gps-card"
-      badge={<StatusPill label={fixStatus.label} tone={fixStatus.tone} dot />}
-    >
-      <div className="simple-metric-body">
-        <div className="gps-hero-row">
-          <div className="gps-direction-block">
-            <span className="gps-heading-big num" data-testid="gps-hdg">
-              {compassDirection(gps.headingDegrees)} {gps.headingDegrees}°
-            </span>
-            <span className="muted-label num" data-testid="gps-alt">
-              Altitude {gps.altitudeMeters.toFixed(0)} m
-            </span>
+      badge={
+        <div className="gps-badge-group">
+          <div className="signal-bars" aria-label={`GPS signal ${signalBars} of 5`}>
+            {[1, 2, 3, 4, 5].map((level) => (
+              <span
+                key={level}
+                className={level <= signalBars ? 'sig-bar is-active' : 'sig-bar'}
+                style={{ height: 4 + level * 2.2 }}
+              />
+            ))}
           </div>
-
+          <StatusPill label={`${fixStatus.label} · ${gps.satellites}`} tone={fixStatus.tone} dot />
+        </div>
+      }
+    >
+      <div className="gps-wide-body">
+        <div className="gps-wide-left">
           <svg viewBox="0 0 64 64" className="mini-compass" aria-hidden="true">
             <circle cx="32" cy="32" r="28" fill="#101216" stroke="#2a2f3a" strokeWidth="1.5" />
             <text x="32" y="13" textAnchor="middle" fill="#6b7280" fontSize="8" fontWeight="600">
@@ -65,6 +69,15 @@ export const GpsStatusCard: React.FC<GpsStatusCardProps> = ({ snapshot }) => {
             <circle cx={tipX} cy={tipY} r="3" fill="#ef4444" />
             <circle cx="32" cy="32" r="2.5" fill="#f9fafb" />
           </svg>
+
+          <div className="gps-direction-block">
+            <span className="gps-heading-big num" data-testid="gps-hdg">
+              {compassDirection(gps.headingDegrees)} {gps.headingDegrees}°
+            </span>
+            <span className="muted-label num" data-testid="gps-alt">
+              Altitude {gps.altitudeMeters.toFixed(0)} m
+            </span>
+          </div>
         </div>
 
         <div className="gps-coords-box">
@@ -79,19 +92,6 @@ export const GpsStatusCard: React.FC<GpsStatusCardProps> = ({ snapshot }) => {
             <span className="gps-val num" data-testid="gps-lon">
               {gps.longitude.toFixed(5)}°
             </span>
-          </div>
-        </div>
-
-        <div className="card-footer-line">
-          <span className="muted-label num">{gps.satellites} Satellites</span>
-          <div className="signal-bars" aria-label={`GPS signal ${signalBars} of 5`}>
-            {[1, 2, 3, 4, 5].map((level) => (
-              <span
-                key={level}
-                className={level <= signalBars ? 'sig-bar is-active' : 'sig-bar'}
-                style={{ height: 4 + level * 2.5 }}
-              />
-            ))}
           </div>
         </div>
       </div>

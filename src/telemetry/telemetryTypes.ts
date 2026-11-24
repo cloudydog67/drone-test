@@ -63,6 +63,9 @@ export interface TelemetrySnapshot {
   knobIdleUs: number;
   throttleMaxUs: number;
   throttleAuthority: ThrottleAuthority;
+  fuelPercent: number;
+  windSpeedKmh: number;
+  windDirectionDegrees: number;
   gps: GpsTelemetry;
   interlocks: InterlockTelemetry;
 }
@@ -74,6 +77,8 @@ export interface TelemetryHistoryPoint {
   speedKmh: number;
   temperatureC: number | null;
   throttlePercent: number;
+  fuelPercent: number;
+  windSpeedKmh: number;
 }
 
 export type TelemetryCommand =
@@ -107,6 +112,11 @@ export interface TelemetryThresholds {
   tempWarnC: number;
   tempCritC: number;
   tempMaxScaleC: number;
+  fuelLowPercent: number;
+  fuelCritPercent: number;
+  windWarnKmh: number;
+  windHighKmh: number;
+  windMaxScaleKmh: number;
   watchdogLimitMs: number;
 }
 
@@ -117,6 +127,11 @@ export const DEFAULT_THRESHOLDS: TelemetryThresholds = {
   tempWarnC: 185,
   tempCritC: 210,
   tempMaxScaleC: 240,
+  fuelLowPercent: 25,
+  fuelCritPercent: 12,
+  windWarnKmh: 35,
+  windHighKmh: 55,
+  windMaxScaleKmh: 70,
   watchdogLimitMs: 500,
 };
 
@@ -141,6 +156,9 @@ export const INITIAL_TELEMETRY_SNAPSHOT: TelemetrySnapshot = {
   knobIdleUs: 1050,
   throttleMaxUs: 1950,
   throttleAuthority: 'HW_KNOB',
+  fuelPercent: 86,
+  windSpeedKmh: 12.4,
+  windDirectionDegrees: 315,
   gps: {
     fix: '3D_FIX',
     satellites: 14,

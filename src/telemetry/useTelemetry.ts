@@ -11,7 +11,7 @@ import type {
 
 const HISTORY_LIMIT = 90;
 const CSV_HEADER =
-  'iso_time,source,phase,speed_kmh,speed_kt,rpm,raw_rpm,hall_rpm,temp_c,temp_fault,throttle_pct,throttle_us,knob_us,gps_fix,satellites,lat,lon,alt_m,hdg_deg,armed,ign_on,starter,estop';
+  'iso_time,source,phase,speed_kmh,speed_kt,rpm,raw_rpm,hall_rpm,temp_c,temp_fault,throttle_pct,throttle_us,knob_us,fuel_pct,wind_kmh,wind_dir_deg,gps_fix,satellites,lat,lon,alt_m,hdg_deg,armed,ign_on,starter,estop';
 
 function formatClock(timestampMs: number): string {
   return new Date(timestampMs).toTimeString().slice(0, 8);
@@ -32,6 +32,9 @@ function snapshotToCsvRow(s: TelemetrySnapshot): string {
     s.throttlePercent,
     s.throttleUs,
     s.knobUs,
+    s.fuelPercent,
+    s.windSpeedKmh,
+    s.windDirectionDegrees,
     s.gps.fix,
     s.gps.satellites,
     s.gps.latitude,
@@ -85,6 +88,8 @@ export function useTelemetry() {
             speedKmh: next.speedKmh,
             temperatureC: next.temperatureC,
             throttlePercent: next.throttlePercent,
+            fuelPercent: next.fuelPercent,
+            windSpeedKmh: next.windSpeedKmh,
           };
           const trimmed =
             prev.length >= HISTORY_LIMIT ? prev.slice(prev.length - (HISTORY_LIMIT - 1)) : prev;
@@ -114,11 +119,11 @@ export function useTelemetry() {
     setSourceMode(nextMode);
     if (nextMode === 'SIM' && simTransportRef.current) {
       espTelemetryBus.attachTransport(simTransportRef.current);
-      setLastAck({ accepted: true, reason: 'SIMULATOR ACTIVE' });
+      setLastAck({ accepted: true, reason: 'Demo mode active' });
     } else if (nextMode === 'ESP32' && espTransportRef.current) {
       espTelemetryBus.attachTransport(espTransportRef.current);
       espTelemetryBus.pushSnapshot({ source: 'ESP32' });
-      setLastAck({ accepted: true, reason: 'READY FOR ESP32 STREAM' });
+      setLastAck({ accepted: true, reason: 'Ready for ESP32 stream' });
     }
   }, []);
 
@@ -143,7 +148,7 @@ export function useTelemetry() {
       const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `uas-dyno-${stamp}.csv`;
+      link.download = `drone-engine-${stamp}.csv`;
       link.click();
       URL.revokeObjectURL(url);
 
@@ -151,13 +156,13 @@ export function useTelemetry() {
       csvRowsRef.current = [];
       setRecording(false);
       setRecordingSeconds(0);
-      setLastAck({ accepted: true, reason: 'CSV EXPORTED' });
+      setLastAck({ accepted: true, reason: 'Log saved' });
     } else {
       csvRowsRef.current = [];
       recordingStartRef.current = Date.now();
       setRecording(true);
       setRecordingSeconds(0);
-      setLastAck({ accepted: true, reason: 'CSV RECORDING STARTED' });
+      setLastAck({ accepted: true, reason: 'Recording started' });
     }
   }, []);
 
