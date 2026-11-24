@@ -34,7 +34,7 @@ function formatPhase(phase: TelemetrySnapshot['enginePhase']): { label: string; 
     case 'RUNNING':
       return { label: 'Running', tone: 'go' };
     case 'WOT':
-      return { label: 'Max Power', tone: 'warn' };
+      return { label: 'Max', tone: 'warn' };
     case 'E-STOP':
       return { label: 'Stopped', tone: 'danger' };
   }
@@ -52,10 +52,10 @@ export const RpmGaugeCard: React.FC<RpmGaugeCardProps> = ({ snapshot }) => {
   const inRedline = snapshot.rpm >= redline;
   const phase = formatPhase(snapshot.enginePhase);
 
-  const needleTip = polar(needleAngle, 73);
-  const needleBaseL = polar(needleAngle - 9, 54);
-  const needleBaseR = polar(needleAngle + 9, 54);
-  const peakOuter = polar(peakAngle, 91);
+  const needleTip = polar(needleAngle, 72);
+  const needleBaseL = polar(needleAngle - 9, 55);
+  const needleBaseR = polar(needleAngle + 9, 55);
+  const peakOuter = polar(peakAngle, 92);
   const peakInner = polar(peakAngle, 81);
 
   return (
@@ -81,8 +81,8 @@ export const RpmGaugeCard: React.FC<RpmGaugeCardProps> = ({ snapshot }) => {
             </filter>
           </defs>
 
-          <circle cx={CENTER} cy={CENTER} r="96" fill="#0d1015" stroke="#222834" strokeWidth="1.2" />
-          <circle cx={CENTER} cy={CENTER} r="54" fill="#131720" stroke="#232936" strokeWidth="1" />
+          <circle cx={CENTER} cy={CENTER} r="96" fill="#0d1015" stroke="#283040" strokeWidth="1.2" />
+          <circle cx={CENTER} cy={CENTER} r="55" fill="#131720" stroke="#283040" strokeWidth="1" />
 
           {Array.from({ length: 41 }).map((_, idx) => {
             const tickRatio = idx / 40;
@@ -99,15 +99,15 @@ export const RpmGaugeCard: React.FC<RpmGaugeCardProps> = ({ snapshot }) => {
                 y1={p1.y}
                 x2={p2.x}
                 y2={p2.y}
-                stroke={isRed ? '#ef4444' : major ? '#94a3b8' : '#2e3545'}
-                strokeWidth={major ? 1.8 : 1}
+                stroke={isRed ? '#ef4444' : major ? '#cbd5e1' : '#333c4e'}
+                strokeWidth={major ? 2 : 1}
               />
             );
           })}
 
           {[0, 2, 4, 6, 8, 10].map((val) => {
             const deg = START_ANGLE + (val / 10) * SWEEP_ANGLE;
-            const pos = polar(deg, 65);
+            const pos = polar(deg, 64);
             return (
               <text
                 key={val}
@@ -115,9 +115,9 @@ export const RpmGaugeCard: React.FC<RpmGaugeCardProps> = ({ snapshot }) => {
                 y={pos.y}
                 textAnchor="middle"
                 dominantBaseline="central"
-                fill={val >= 8 ? '#f87171' : '#64748b'}
-                fontSize="9.5"
-                fontWeight="600"
+                fill={val >= 8 ? '#fca5a5' : '#cbd5e1'}
+                fontSize="12"
+                fontWeight="700"
                 fontFamily="Inter, Segoe UI, sans-serif"
               >
                 {val}k
@@ -129,14 +129,14 @@ export const RpmGaugeCard: React.FC<RpmGaugeCardProps> = ({ snapshot }) => {
             d={arcPath(78, START_ANGLE, START_ANGLE + SWEEP_ANGLE)}
             fill="none"
             stroke="#1e232e"
-            strokeWidth="9"
+            strokeWidth="9.5"
             strokeLinecap="round"
           />
           <path
             d={arcPath(78, redStart, redEnd)}
             fill="none"
-            stroke="rgba(239, 68, 68, 0.34)"
-            strokeWidth="9"
+            stroke="rgba(239, 68, 68, 0.36)"
+            strokeWidth="9.5"
             strokeLinecap="round"
           />
 
@@ -145,7 +145,7 @@ export const RpmGaugeCard: React.FC<RpmGaugeCardProps> = ({ snapshot }) => {
               d={arcPath(78, START_ANGLE, needleAngle)}
               fill="none"
               stroke={inRedline ? '#ef4444' : 'url(#rpmArcGrad)'}
-              strokeWidth="9"
+              strokeWidth="9.5"
               strokeLinecap="round"
               filter="url(#arcGlow)"
             />
@@ -158,23 +158,22 @@ export const RpmGaugeCard: React.FC<RpmGaugeCardProps> = ({ snapshot }) => {
               x2={peakInner.x}
               y2={peakInner.y}
               stroke="#f59e0b"
-              strokeWidth="2.4"
+              strokeWidth="2.6"
               strokeLinecap="round"
             />
           )}
 
           <polygon
             points={`${needleTip.x},${needleTip.y} ${needleBaseL.x},${needleBaseL.y} ${needleBaseR.x},${needleBaseR.y}`}
-            fill={inRedline ? '#ef4444' : '#f8fafc'}
-            opacity="0.92"
+            fill={inRedline ? '#ef4444' : '#ffffff'}
           />
 
           <text
             x={CENTER}
             y={CENTER + 5}
             textAnchor="middle"
-            fill={inRedline ? '#f87171' : '#f9fafb'}
-            fontSize="31"
+            fill={inRedline ? '#f87171' : '#ffffff'}
+            fontSize="35"
             fontWeight="700"
             fontFamily="Inter, Segoe UI, sans-serif"
             data-testid="rpm-value"
@@ -183,11 +182,11 @@ export const RpmGaugeCard: React.FC<RpmGaugeCardProps> = ({ snapshot }) => {
           </text>
           <text
             x={CENTER}
-            y={CENTER + 26}
+            y={CENTER + 28}
             textAnchor="middle"
-            fill="#9ca3af"
-            fontSize="11.5"
-            fontWeight="500"
+            fill="#cbd5e1"
+            fontSize="14"
+            fontWeight="600"
             fontFamily="Inter, Segoe UI, sans-serif"
           >
             RPM
@@ -195,7 +194,7 @@ export const RpmGaugeCard: React.FC<RpmGaugeCardProps> = ({ snapshot }) => {
         </svg>
 
         <div className="card-footer-line">
-          <span className="muted-label">Peak Speed</span>
+          <span className="muted-label">Peak</span>
           <span className="footer-val num">{snapshot.peakRpm.toLocaleString()} RPM</span>
         </div>
       </div>

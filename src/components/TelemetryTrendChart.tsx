@@ -37,7 +37,7 @@ const METRIC_OPTIONS: {
   max: number;
 }[] = [
   { key: 'rpm', label: 'RPM', unit: 'RPM', color: '#38bdf8', max: DEFAULT_THRESHOLDS.rpmMaxScale },
-  { key: 'speedKmh', label: 'Speed', unit: 'km/h', color: '#e5e7eb', max: DEFAULT_THRESHOLDS.speedMaxKmh },
+  { key: 'speedKmh', label: 'Speed', unit: 'km/h', color: '#f8fafc', max: DEFAULT_THRESHOLDS.speedMaxKmh },
   { key: 'temperatureC', label: 'Temp', unit: '°C', color: '#f59e0b', max: DEFAULT_THRESHOLDS.tempMaxScaleC },
   { key: 'throttlePercent', label: 'Throttle', unit: '%', color: '#22c55e', max: 100 },
   { key: 'fuelPercent', label: 'Fuel', unit: '%', color: '#34d399', max: 100 },
@@ -67,80 +67,82 @@ export const TelemetryTrendChart: React.FC<TelemetryTrendChartProps> = ({
       title={`Live Graph · ${latestDisplay} ${active.unit}`}
       testId="telemetry-chart-card"
       badge={
-        <div className="chart-toolbar">
-          <div className="chart-tabs">
-            {METRIC_OPTIONS.map((option) => (
-              <button
-                key={option.key}
-                type="button"
-                className={
-                  selectedMetric === option.key ? 'series-chip is-selected' : 'series-chip'
-                }
-                onClick={() => setSelectedMetric(option.key)}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-          <button
-            type="button"
-            className="chart-pause-btn"
-            onClick={onTogglePause}
-            aria-label={paused ? 'Resume graph' : 'Pause graph'}
-          >
-            {paused ? <Play size={12} /> : <Pause size={12} />}
-          </button>
-        </div>
+        <button
+          type="button"
+          className="chart-pause-btn"
+          onClick={onTogglePause}
+          aria-label={paused ? 'Resume graph' : 'Pause graph'}
+        >
+          {paused ? <Play size={14} /> : <Pause size={14} />}
+          <span>{paused ? 'Resume' : 'Pause'}</span>
+        </button>
       }
     >
-      <div className="chart-container">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={history} margin={{ top: 12, right: 14, left: -8, bottom: 0 }}>
-            <defs>
-              <linearGradient id="metricAreaFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={active.color} stopOpacity={0.32} />
-                <stop offset="100%" stopColor={active.color} stopOpacity={0.01} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid stroke="#222630" strokeDasharray="3 3" vertical={false} />
-            <XAxis
-              dataKey="timeLabel"
-              stroke="#4b5563"
-              tick={{ fill: '#9ca3af', fontSize: 11, fontFamily: 'Inter, Segoe UI, sans-serif' }}
-              minTickGap={34}
-              tickLine={false}
-            />
-            <YAxis
-              domain={[0, active.max]}
-              stroke="#4b5563"
-              tick={{ fill: '#9ca3af', fontSize: 11, fontFamily: 'Inter, Segoe UI, sans-serif' }}
-              width={44}
-              tickLine={false}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: '#121418',
-                border: '1px solid #303643',
-                borderRadius: 10,
-                fontSize: 13,
-                fontFamily: 'Inter, Segoe UI, sans-serif',
-                color: '#f9fafb',
-                boxShadow: '0 10px 28px rgba(0, 0, 0, 0.45)',
-              }}
-              formatter={(value) => [`${value} ${active.unit}`, active.label]}
-            />
-            <Area
-              type="monotone"
-              dataKey={active.key}
-              name={active.label}
-              stroke={active.color}
-              strokeWidth={2.5}
-              fill="url(#metricAreaFill)"
-              dot={false}
-              isAnimationActive={false}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+      <div className="chart-panel-stack">
+        <div className="chart-tabs">
+          {METRIC_OPTIONS.map((option) => (
+            <button
+              key={option.key}
+              type="button"
+              className={
+                selectedMetric === option.key ? 'series-chip is-selected' : 'series-chip'
+              }
+              onClick={() => setSelectedMetric(option.key)}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="chart-container">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={history} margin={{ top: 10, right: 14, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="metricAreaFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={active.color} stopOpacity={0.34} />
+                  <stop offset="100%" stopColor={active.color} stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid stroke="#252b38" strokeDasharray="3 3" vertical={false} />
+              <XAxis
+                dataKey="timeLabel"
+                stroke="#64748b"
+                tick={{ fill: '#cbd5e1', fontSize: 13, fontFamily: 'Inter, Segoe UI, sans-serif' }}
+                minTickGap={42}
+                tickLine={false}
+              />
+              <YAxis
+                domain={[0, active.max]}
+                stroke="#64748b"
+                tick={{ fill: '#cbd5e1', fontSize: 13, fontFamily: 'Inter, Segoe UI, sans-serif' }}
+                width={52}
+                tickLine={false}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#121418',
+                  border: '1px solid #374151',
+                  borderRadius: 10,
+                  fontSize: 15,
+                  fontFamily: 'Inter, Segoe UI, sans-serif',
+                  color: '#ffffff',
+                  boxShadow: '0 10px 28px rgba(0, 0, 0, 0.5)',
+                }}
+                formatter={(value) => [`${value} ${active.unit}`, active.label]}
+              />
+              <Area
+                type="monotone"
+                dataKey={active.key}
+                name={active.label}
+                stroke={active.color}
+                strokeWidth={3}
+                fill="url(#metricAreaFill)"
+                dot={false}
+                isAnimationActive={false}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     </PanelCard>
   );

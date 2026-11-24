@@ -54,9 +54,9 @@ export const WindCard: React.FC<WindCardProps> = ({ snapshot }) => {
         </div>
 
         <svg viewBox="0 0 64 64" className="wind-dial-svg" aria-label={`Wind from ${dirLabel}`}>
-          <circle cx="32" cy="32" r="28" fill="#0d1015" stroke="#283040" strokeWidth="1.4" />
-          <circle cx="32" cy="32" r="19" fill="none" stroke="#1d222e" strokeWidth="1" />
-          <text x="32" y="12" textAnchor="middle" fill="#64748b" fontSize="7.5" fontWeight="700">
+          <circle cx="32" cy="32" r="28" fill="#0d1015" stroke="#313b4f" strokeWidth="1.5" />
+          <circle cx="32" cy="32" r="19" fill="none" stroke="#222938" strokeWidth="1" />
+          <text x="32" y="13" textAnchor="middle" fill="#cbd5e1" fontSize="10" fontWeight="700">
             N
           </text>
           <g
@@ -68,15 +68,15 @@ export const WindCard: React.FC<WindCardProps> = ({ snapshot }) => {
           >
             <line
               x1="32"
-              y1="15"
+              y1="16"
               x2="32"
               y2="48"
               stroke="#38bdf8"
-              strokeWidth="2.2"
+              strokeWidth="2.5"
               strokeLinecap="round"
             />
-            <polygon points="32,12 27.5,20 36.5,20" fill="#38bdf8" />
-            <circle cx="32" cy="32" r="3" fill="#f8fafc" />
+            <polygon points="32,12 27,21 37,21" fill="#38bdf8" />
+            <circle cx="32" cy="32" r="3.2" fill="#ffffff" />
           </g>
         </svg>
       </div>

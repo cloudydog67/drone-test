@@ -40,7 +40,7 @@ export const EngineControlDeck: React.FC<EngineControlDeckProps> = ({
     <PanelCard
       title="Engine Controls"
       testId="control-deck-card"
-      badge={<span className="runtime-label num">Run time {formatRunTime(snapshot.runTimeSeconds)}</span>}
+      badge={<span className="runtime-label num">Run {formatRunTime(snapshot.runTimeSeconds)}</span>}
     >
       <div className="simple-controls-layout">
         <div className="step-buttons-row">
@@ -54,9 +54,9 @@ export const EngineControlDeck: React.FC<EngineControlDeckProps> = ({
             <span className={interlocks.armed ? 'led-bar led-go' : 'led-bar'} />
             <div className="step-head">
               <span className={interlocks.armed ? 'step-num is-done' : 'step-num'}>
-                {interlocks.armed ? <Check size={13} /> : '1'}
+                {interlocks.armed ? <Check size={14} /> : '1'}
               </span>
-              {interlocks.armed ? <Unlock size={17} /> : <Lock size={17} />}
+              {interlocks.armed ? <Unlock size={19} /> : <Lock size={19} />}
             </div>
             <div className="step-copy">
               <span className="step-title">
@@ -66,8 +66,8 @@ export const EngineControlDeck: React.FC<EngineControlDeckProps> = ({
                 {interlocks.armed
                   ? 'Tap to lock'
                   : !interlocks.knobAtIdle
-                  ? 'Set handle to 0%'
-                  : 'Ready to unlock'}
+                  ? 'Set to 0%'
+                  : 'Ready'}
               </span>
             </div>
           </button>
@@ -82,16 +82,16 @@ export const EngineControlDeck: React.FC<EngineControlDeckProps> = ({
             <span className={interlocks.ignitionOn ? 'led-bar led-warn' : 'led-bar'} />
             <div className="step-head">
               <span className={interlocks.ignitionOn ? 'step-num is-warn-done' : 'step-num'}>
-                {interlocks.ignitionOn ? <Check size={13} /> : '2'}
+                {interlocks.ignitionOn ? <Check size={14} /> : '2'}
               </span>
-              <Flame size={17} />
+              <Flame size={19} />
             </div>
             <div className="step-copy">
               <span className="step-title">
                 {interlocks.ignitionOn ? 'Ignition On' : 'Ignition Off'}
               </span>
               <span className="step-hint">
-                {interlocks.ignitionOn ? 'Tap to stop engine' : 'Unlock first'}
+                {interlocks.ignitionOn ? 'Tap to stop' : 'Unlock first'}
               </span>
             </div>
           </button>
@@ -107,13 +107,13 @@ export const EngineControlDeck: React.FC<EngineControlDeckProps> = ({
             <span className={interlocks.starterCranking ? 'led-bar led-accent' : 'led-bar'} />
             <div className="step-head">
               <span className="step-num">3</span>
-              <Zap size={17} />
+              <Zap size={19} />
             </div>
             <div className="step-copy">
               <span className="step-title">
-                {interlocks.starterCranking ? 'Starting...' : 'Hold to Start'}
+                {interlocks.starterCranking ? 'Starting...' : 'Hold Start'}
               </span>
-              <span className="step-hint">Release when running</span>
+              <span className="step-hint">Hold to start</span>
             </div>
           </MomentaryButton>
         </div>
@@ -121,7 +121,7 @@ export const EngineControlDeck: React.FC<EngineControlDeckProps> = ({
         <div className="handle-bar">
           <div className="handle-header">
             <span className="muted-label">
-              {sourceMode === 'SIM' ? 'Demo Throttle Handle' : 'Physical Throttle Handle'}
+              {sourceMode === 'SIM' ? 'Demo Handle' : 'Physical Handle'}
             </span>
             <span className="footer-val num">{handlePct}%</span>
           </div>
