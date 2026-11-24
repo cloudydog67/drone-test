@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Circle, OctagonAlert, RotateCcw, Square } from 'lucide-react';
 import {
   DEFAULT_THRESHOLDS,
@@ -74,29 +74,68 @@ export const CommandHeader: React.FC<CommandHeaderProps> = ({
   onEstop,
   onClearEstop,
 }) => {
+  const [clock, setClock] = useState(() => new Date().toTimeString().slice(0, 8));
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setClock(new Date().toTimeString().slice(0, 8));
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
   const watchdogStale = watchdogAgeMs > DEFAULT_THRESHOLDS.watchdogLimitMs;
   const overall = getOverallStatus(snapshot, watchdogStale);
+  const rotorSpinDuration =
+    snapshot.rpm > 120 ? Math.max(0.14, 1.4 - (snapshot.rpm / 9000) * 1.2) : 0;
 
   return (
     <header className="command-header" data-testid="command-header">
       <div className="header-group">
         <div className="brand-lockup">
-          <div className="brand-mark" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="3.2" stroke="currentColor" strokeWidth="1.8" />
+          <div className={snapshot.rpm > 120 ? 'brand-mark is-spinning' : 'brand-mark'} aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
               <path
-                d="M3.5 12h4.2M16.3 12h4.2M12 3.5v4.2M12 16.3v4.2"
+                d="M5.5 5.5L18.5 18.5M18.5 5.5L5.5 18.5"
                 stroke="currentColor"
-                strokeWidth="1.8"
+                strokeWidth="1.5"
                 strokeLinecap="round"
+                opacity="0.55"
               />
-              <circle cx="4.5" cy="4.5" r="2" fill="currentColor" opacity="0.65" />
-              <circle cx="19.5" cy="4.5" r="2" fill="currentColor" opacity="0.65" />
-              <circle cx="4.5" cy="19.5" r="2" fill="currentColor" opacity="0.65" />
-              <circle cx="19.5" cy="19.5" r="2" fill="currentColor" opacity="0.65" />
+              <rect x="9.5" y="9.5" width="5" height="5" rx="1.4" fill="currentColor" />
+              {[
+                { cx: 5.5, cy: 5.5 },
+                { cx: 18.5, cy: 5.5 },
+                { cx: 5.5, cy: 18.5 },
+                { cx: 18.5, cy: 18.5 },
+              ].map((rotor, idx) => (
+                <g
+                  key={idx}
+                  style={
+                    rotorSpinDuration > 0
+                      ? {
+                          transformOrigin: `${rotor.cx}px ${rotor.cy}px`,
+                          animation: `rotorSpin ${rotorSpinDuration}s linear infinite`,
+                        }
+                      : undefined
+                  }
+                >
+                  <circle
+                    cx={rotor.cx}
+                    cy={rotor.cy}
+                    r="3.2"
+                    stroke="currentColor"
+                    strokeWidth="1.2"
+                    strokeDasharray="3 2.2"
+                  />
+                  <circle cx={rotor.cx} cy={rotor.cy} r="1" fill="currentColor" />
+                </g>
+              ))}
             </svg>
           </div>
-          <span className="app-title">Drone Engine Monitor</span>
+          <div className="brand-text">
+            <span className="app-title">Drone Engine Monitor</span>
+            <span className="header-clock num">{clock}</span>
+          </div>
         </div>
 
         <div className="source-switch" role="group" aria-label="Mode">

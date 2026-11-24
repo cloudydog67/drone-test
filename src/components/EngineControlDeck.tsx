@@ -51,6 +51,7 @@ export const EngineControlDeck: React.FC<EngineControlDeckProps> = ({
             className={interlocks.armed ? 'step-btn is-armed' : 'step-btn'}
             onClick={onToggleArm}
           >
+            <span className={interlocks.armed ? 'led-bar led-go' : 'led-bar'} />
             <div className="step-head">
               <span className={interlocks.armed ? 'step-num is-done' : 'step-num'}>
                 {interlocks.armed ? <Check size={13} /> : '1'}
@@ -78,6 +79,7 @@ export const EngineControlDeck: React.FC<EngineControlDeckProps> = ({
             className={interlocks.ignitionOn ? 'step-btn is-ign' : 'step-btn'}
             onClick={onToggleIgnition}
           >
+            <span className={interlocks.ignitionOn ? 'led-bar led-warn' : 'led-bar'} />
             <div className="step-head">
               <span className={interlocks.ignitionOn ? 'step-num is-warn-done' : 'step-num'}>
                 {interlocks.ignitionOn ? <Check size={13} /> : '2'}
@@ -102,6 +104,7 @@ export const EngineControlDeck: React.FC<EngineControlDeckProps> = ({
             className="step-btn step-starter"
             testId="starter-btn"
           >
+            <span className={interlocks.starterCranking ? 'led-bar led-accent' : 'led-bar'} />
             <div className="step-head">
               <span className="step-num">3</span>
               <Zap size={17} />

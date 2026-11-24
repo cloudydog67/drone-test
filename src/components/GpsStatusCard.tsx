@@ -27,9 +27,7 @@ export const GpsStatusCard: React.FC<GpsStatusCardProps> = ({ snapshot }) => {
   const { gps } = snapshot;
   const fixStatus = formatFix(gps.fix);
   const signalBars = Math.min(5, Math.max(0, Math.round(gps.satellites / 3)));
-  const headingRad = ((gps.headingDegrees - 90) * Math.PI) / 180;
-  const tipX = 32 + Math.cos(headingRad) * 20;
-  const tipY = 32 + Math.sin(headingRad) * 20;
+  const locked = gps.fix === '3D_FIX' || gps.fix === 'RTK_FIX';
 
   return (
     <PanelCard
@@ -52,23 +50,25 @@ export const GpsStatusCard: React.FC<GpsStatusCardProps> = ({ snapshot }) => {
     >
       <div className="gps-wide-body">
         <div className="gps-wide-left">
-          <svg viewBox="0 0 64 64" className="mini-compass" aria-hidden="true">
-            <circle cx="32" cy="32" r="28" fill="#101216" stroke="#2a2f3a" strokeWidth="1.5" />
-            <text x="32" y="13" textAnchor="middle" fill="#6b7280" fontSize="8" fontWeight="600">
-              N
-            </text>
-            <line
-              x1="32"
-              y1="32"
-              x2={tipX}
-              y2={tipY}
-              stroke="#38bdf8"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-            />
-            <circle cx={tipX} cy={tipY} r="3" fill="#ef4444" />
-            <circle cx="32" cy="32" r="2.5" fill="#f9fafb" />
-          </svg>
+          <div className="radar-shell" aria-hidden="true">
+            {locked && <div className="radar-sweep" />}
+            <svg viewBox="0 0 72 72" className="radar-svg">
+              <circle cx="36" cy="36" r="32" fill="none" stroke="#283142" strokeWidth="1.2" />
+              <circle cx="36" cy="36" r="21" fill="none" stroke="#1c2230" strokeWidth="1" />
+              <circle cx="36" cy="36" r="10" fill="none" stroke="#1c2230" strokeWidth="1" />
+              <line x1="36" y1="4" x2="36" y2="68" stroke="#1c2230" strokeWidth="1" />
+              <line x1="4" y1="36" x2="68" y2="36" stroke="#1c2230" strokeWidth="1" />
+              <g
+                style={{
+                  transformOrigin: '36px 36px',
+                  transform: `rotate(${gps.headingDegrees}deg)`,
+                  transition: 'transform 0.3s ease',
+                }}
+              >
+                <polygon points="36,24 30.5,41 36,37.5 41.5,41" fill="#38bdf8" />
+              </g>
+            </svg>
+          </div>
 
           <div className="gps-direction-block">
             <span className="gps-heading-big num" data-testid="gps-hdg">

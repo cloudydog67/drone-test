@@ -26,8 +26,16 @@ export function App() {
     toggleRecording,
   } = useTelemetry();
 
+  const ambientClass = snapshot.interlocks.estopLatched
+    ? 'gcs-screen ambient-danger'
+    : snapshot.enginePhase === 'WOT'
+    ? 'gcs-screen ambient-warn'
+    : snapshot.enginePhase === 'RUNNING' || snapshot.enginePhase === 'IDLE'
+    ? 'gcs-screen ambient-running'
+    : 'gcs-screen';
+
   return (
-    <div className="gcs-screen" data-testid="gcs-root">
+    <div className={ambientClass} data-testid="gcs-root">
       <CommandHeader
         snapshot={snapshot}
         sourceMode={sourceMode}

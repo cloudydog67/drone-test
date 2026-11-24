@@ -1,5 +1,4 @@
 import React from 'react';
-import { Wind } from 'lucide-react';
 import { PanelCard } from './ui/PanelCard';
 import { StatusPill, type PillTone } from './ui/StatusPill';
 import { DEFAULT_THRESHOLDS, type TelemetrySnapshot } from '../telemetry/telemetryTypes';
@@ -30,7 +29,6 @@ function getWindStatus(kmh: number): { label: string; tone: PillTone } {
 export const WindCard: React.FC<WindCardProps> = ({ snapshot }) => {
   const wind = Math.max(0, snapshot.windSpeedKmh);
   const status = getWindStatus(wind);
-  const windPct = Math.max(0, Math.min(100, (wind / DEFAULT_THRESHOLDS.windMaxScaleKmh) * 100));
   const dirLabel = compassDirection(snapshot.windDirectionDegrees);
 
   return (
@@ -39,29 +37,48 @@ export const WindCard: React.FC<WindCardProps> = ({ snapshot }) => {
       testId="wind-card"
       badge={<StatusPill label={status.label} tone={status.tone} dot />}
     >
-      <div className="compact-metric-body">
-        <div className="compact-hero-row">
-          <Wind size={20} className={`icon-tone-${status.tone}`} />
-          <span
-            className={`compact-number num text-tone-${status.tone}`}
-            data-testid="wind-kmh"
-          >
-            {wind.toFixed(0)}
+      <div className="wind-vane-layout">
+        <div className="fuel-readout-col">
+          <div className="compact-hero-row">
+            <span
+              className={`compact-number num text-tone-${status.tone}`}
+              data-testid="wind-kmh"
+            >
+              {wind.toFixed(0)}
+            </span>
+            <span className="compact-unit">km/h</span>
+          </div>
+          <span className="muted-label num">
+            {dirLabel} · {(wind / 3.6).toFixed(1)} m/s
           </span>
-          <span className="compact-unit">km/h</span>
         </div>
 
-        <div className="fuel-bar-track">
-          <div
-            className={`fuel-bar-fill fill-${status.tone}`}
-            style={{ width: `${windPct}%` }}
-          />
-        </div>
-
-        <div className="scale-caption num">
-          <span>From {dirLabel} ({snapshot.windDirectionDegrees}°)</span>
-          <span>{(wind / 3.6).toFixed(1)} m/s</span>
-        </div>
+        <svg viewBox="0 0 64 64" className="wind-dial-svg" aria-label={`Wind from ${dirLabel}`}>
+          <circle cx="32" cy="32" r="28" fill="#0d1015" stroke="#283040" strokeWidth="1.4" />
+          <circle cx="32" cy="32" r="19" fill="none" stroke="#1d222e" strokeWidth="1" />
+          <text x="32" y="12" textAnchor="middle" fill="#64748b" fontSize="7.5" fontWeight="700">
+            N
+          </text>
+          <g
+            style={{
+              transformOrigin: '32px 32px',
+              transform: `rotate(${snapshot.windDirectionDegrees}deg)`,
+              transition: 'transform 0.35s ease',
+            }}
+          >
+            <line
+              x1="32"
+              y1="15"
+              x2="32"
+              y2="48"
+              stroke="#38bdf8"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+            />
+            <polygon points="32,12 27.5,20 36.5,20" fill="#38bdf8" />
+            <circle cx="32" cy="32" r="3" fill="#f8fafc" />
+          </g>
+        </svg>
       </div>
     </PanelCard>
   );
