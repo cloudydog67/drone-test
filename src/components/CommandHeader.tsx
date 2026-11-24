@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Circle, OctagonAlert, RotateCcw, Square } from 'lucide-react';
+import { Circle, Moon, OctagonAlert, RotateCcw, Square, Sun } from 'lucide-react';
 import {
   DEFAULT_THRESHOLDS,
   type CommandAck,
@@ -14,6 +14,8 @@ export interface CommandHeaderProps {
   recording: boolean;
   recordingSeconds: number;
   lastAck: CommandAck | null;
+  daylightMode: boolean;
+  onToggleDaylight: () => void;
   onSwitchSource: (source: TelemetrySource) => void;
   onToggleRecord: () => void;
   onEstop: () => void;
@@ -69,6 +71,8 @@ export const CommandHeader: React.FC<CommandHeaderProps> = ({
   recording,
   recordingSeconds,
   lastAck,
+  daylightMode,
+  onToggleDaylight,
   onSwitchSource,
   onToggleRecord,
   onEstop,
@@ -92,8 +96,11 @@ export const CommandHeader: React.FC<CommandHeaderProps> = ({
     <header className="command-header" data-testid="command-header">
       <div className="header-group">
         <div className="brand-lockup">
-          <div className={snapshot.rpm > 120 ? 'brand-mark is-spinning' : 'brand-mark'} aria-hidden="true">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <div
+            className={snapshot.rpm > 120 ? 'brand-mark is-spinning' : 'brand-mark'}
+            aria-hidden="true"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <path
                 d="M5.5 5.5L18.5 18.5M18.5 5.5L5.5 18.5"
                 stroke="currentColor"
@@ -124,7 +131,7 @@ export const CommandHeader: React.FC<CommandHeaderProps> = ({
                     cy={rotor.cy}
                     r="3.2"
                     stroke="currentColor"
-                    strokeWidth="1.2"
+                    strokeWidth="1.3"
                     strokeDasharray="3 2.2"
                   />
                   <circle cx={rotor.cx} cy={rotor.cy} r="1" fill="currentColor" />
@@ -170,11 +177,21 @@ export const CommandHeader: React.FC<CommandHeaderProps> = ({
 
         <button
           type="button"
+          className="theme-toggle-btn"
+          onClick={onToggleDaylight}
+          title={daylightMode ? 'Switch to dark mode' : 'Switch to bright outdoor mode'}
+          aria-label={daylightMode ? 'Switch to dark mode' : 'Switch to bright outdoor mode'}
+        >
+          {daylightMode ? <Moon size={18} /> : <Sun size={18} />}
+        </button>
+
+        <button
+          type="button"
           className={recording ? 'rec-btn is-recording' : 'rec-btn'}
           onClick={onToggleRecord}
           data-testid="record-csv-btn"
         >
-          {recording ? <Square size={12} /> : <Circle size={12} />}
+          {recording ? <Square size={13} /> : <Circle size={13} />}
           <span className="num">
             {recording ? `Recording ${formatDuration(recordingSeconds)}` : 'Record'}
           </span>
@@ -187,7 +204,7 @@ export const CommandHeader: React.FC<CommandHeaderProps> = ({
             onClick={onClearEstop}
             data-testid="clear-estop-btn"
           >
-            <RotateCcw size={14} />
+            <RotateCcw size={15} />
             <span>Reset</span>
           </button>
         )}
@@ -198,7 +215,7 @@ export const CommandHeader: React.FC<CommandHeaderProps> = ({
           onClick={onEstop}
           data-testid="estop-btn"
         >
-          <OctagonAlert size={18} />
+          <OctagonAlert size={19} />
           <span>EMERGENCY STOP</span>
         </button>
       </div>

@@ -35,10 +35,18 @@ export const TemperatureCard: React.FC<TemperatureCardProps> = ({ snapshot }) =>
       ? 0
       : Math.max(0, Math.min(100, (temperatureC / DEFAULT_THRESHOLDS.tempMaxScaleC) * 100));
 
+  const cardAura =
+    status.tone === 'danger'
+      ? 'card-aura-danger'
+      : status.tone === 'warn'
+      ? 'card-aura-warn'
+      : undefined;
+
   return (
     <PanelCard
       title="Temperature"
       testId="temp-card"
+      className={cardAura}
       badge={<StatusPill label={status.label} tone={status.tone} dot />}
     >
       <div className="simple-metric-body">

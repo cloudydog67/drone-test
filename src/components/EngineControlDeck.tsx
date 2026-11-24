@@ -35,6 +35,10 @@ export const EngineControlDeck: React.FC<EngineControlDeckProps> = ({
   const canActuate = interlocks.armed && interlocks.edgeLinkOnline && !interlocks.estopLatched;
   const span = Math.max(1, snapshot.throttleMaxUs - snapshot.knobIdleUs);
   const handlePct = Math.round(((snapshot.knobUs - snapshot.knobIdleUs) / span) * 100);
+  const isRunning =
+    snapshot.enginePhase === 'RUNNING' ||
+    snapshot.enginePhase === 'IDLE' ||
+    snapshot.enginePhase === 'WOT';
 
   return (
     <PanelCard
@@ -43,6 +47,20 @@ export const EngineControlDeck: React.FC<EngineControlDeckProps> = ({
       badge={<span className="runtime-label num">Run {formatRunTime(snapshot.runTimeSeconds)}</span>}
     >
       <div className="simple-controls-layout">
+        <div className="step-flow-rail" aria-hidden="true">
+          <span className={interlocks.armed ? 'flow-seg seg-go' : 'flow-seg'} />
+          <span className={interlocks.ignitionOn ? 'flow-seg seg-warn' : 'flow-seg'} />
+          <span
+            className={
+              isRunning
+                ? 'flow-seg seg-go'
+                : interlocks.starterCranking
+                ? 'flow-seg seg-accent'
+                : 'flow-seg'
+            }
+          />
+        </div>
+
         <div className="step-buttons-row">
           <button
             type="button"
@@ -106,14 +124,16 @@ export const EngineControlDeck: React.FC<EngineControlDeckProps> = ({
           >
             <span className={interlocks.starterCranking ? 'led-bar led-accent' : 'led-bar'} />
             <div className="step-head">
-              <span className="step-num">3</span>
+              <span className={isRunning ? 'step-num is-done' : 'step-num'}>
+                {isRunning ? <Check size={14} /> : '3'}
+              </span>
               <Zap size={19} />
             </div>
             <div className="step-copy">
               <span className="step-title">
-                {interlocks.starterCranking ? 'Starting...' : 'Hold Start'}
+                {interlocks.starterCranking ? 'Starting...' : isRunning ? 'Running' : 'Hold Start'}
               </span>
-              <span className="step-hint">Hold to start</span>
+              <span className="step-hint">{isRunning ? 'Engine active' : 'Hold to start'}</span>
             </div>
           </MomentaryButton>
         </div>

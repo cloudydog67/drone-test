@@ -19,7 +19,7 @@ export const SpeedCard: React.FC<SpeedCardProps> = ({ snapshot }) => {
     <PanelCard
       title="Speed"
       testId="speed-card"
-      badge={<Gauge size={16} className="card-header-icon" />}
+      badge={<Gauge size={18} className="card-header-icon" />}
     >
       <div className="simple-metric-body">
         <div className="big-value-group">
@@ -31,14 +31,12 @@ export const SpeedCard: React.FC<SpeedCardProps> = ({ snapshot }) => {
 
         <div className="bar-section">
           <div className="segment-bar" aria-hidden="true">
-            {Array.from({ length: totalSegments }).map((_, idx) => (
-              <span
-                key={idx}
-                className={
-                  idx < activeSegments ? 'segment-cell is-lit' : 'segment-cell'
-                }
-              />
-            ))}
+            {Array.from({ length: totalSegments }).map((_, idx) => {
+              const lit = idx < activeSegments;
+              const tier =
+                idx >= 13 ? 'segment-cell is-lit-high' : idx >= 9 ? 'segment-cell is-lit-mid' : 'segment-cell is-lit';
+              return <span key={idx} className={lit ? tier : 'segment-cell'} />;
+            })}
           </div>
           <div className="scale-caption num">
             <span>0</span>

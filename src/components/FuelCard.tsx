@@ -41,16 +41,23 @@ export const FuelCard: React.FC<FuelCardProps> = ({ snapshot }) => {
           <span className="muted-label">Tank Level</span>
         </div>
 
-        <div className="sight-glass" aria-label={`Fuel tank ${fuel.toFixed(0)} percent`}>
-          <div
-            className={`sight-liquid liquid-${status.tone}`}
-            style={{ height: `${fuel}%` }}
-          >
-            <span className="sight-meniscus" />
+        <div className="sight-assembly">
+          <div className="sight-scale" aria-hidden="true">
+            <span>F</span>
+            <span>½</span>
+            <span>E</span>
           </div>
-          <span className="sight-mark" style={{ bottom: '75%' }} />
-          <span className="sight-mark" style={{ bottom: '50%' }} />
-          <span className="sight-mark sight-mark-low" style={{ bottom: '25%' }} />
+          <div className="sight-glass" aria-label={`Fuel tank ${fuel.toFixed(0)} percent`}>
+            <div
+              className={`sight-liquid liquid-${status.tone}`}
+              style={{ height: `${fuel}%` }}
+            >
+              <span className="sight-meniscus" />
+            </div>
+            <span className="sight-mark" style={{ bottom: '75%' }} />
+            <span className="sight-mark" style={{ bottom: '50%' }} />
+            <span className="sight-mark sight-mark-low" style={{ bottom: '25%' }} />
+          </div>
         </div>
       </div>
     </PanelCard>

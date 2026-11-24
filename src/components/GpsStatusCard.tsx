@@ -40,7 +40,7 @@ export const GpsStatusCard: React.FC<GpsStatusCardProps> = ({ snapshot }) => {
               <span
                 key={level}
                 className={level <= signalBars ? 'sig-bar is-active' : 'sig-bar'}
-                style={{ height: 4 + level * 2.2 }}
+                style={{ height: 5 + level * 2.4 }}
               />
             ))}
           </div>
@@ -52,20 +52,35 @@ export const GpsStatusCard: React.FC<GpsStatusCardProps> = ({ snapshot }) => {
         <div className="gps-wide-left">
           <div className="radar-shell" aria-hidden="true">
             {locked && <div className="radar-sweep" />}
-            <svg viewBox="0 0 72 72" className="radar-svg">
-              <circle cx="36" cy="36" r="32" fill="none" stroke="#283142" strokeWidth="1.2" />
-              <circle cx="36" cy="36" r="21" fill="none" stroke="#1c2230" strokeWidth="1" />
-              <circle cx="36" cy="36" r="10" fill="none" stroke="#1c2230" strokeWidth="1" />
-              <line x1="36" y1="4" x2="36" y2="68" stroke="#1c2230" strokeWidth="1" />
-              <line x1="4" y1="36" x2="68" y2="36" stroke="#1c2230" strokeWidth="1" />
+            <svg viewBox="0 0 76 76" className="radar-svg">
+              <circle cx="38" cy="38" r="34" fill="none" stroke="var(--radar-ring)" strokeWidth="1.4" />
+              <circle cx="38" cy="38" r="22" fill="none" stroke="var(--radar-grid)" strokeWidth="1" />
+              <circle cx="38" cy="38" r="10" fill="none" stroke="var(--radar-grid)" strokeWidth="1" />
+              <line x1="38" y1="4" x2="38" y2="72" stroke="var(--radar-grid)" strokeWidth="1" />
+              <line x1="4" y1="38" x2="72" y2="38" stroke="var(--radar-grid)" strokeWidth="1" />
+              <text x="38" y="13" textAnchor="middle" fill="var(--text-muted)" fontSize="9.5" fontWeight="700">
+                N
+              </text>
+              {locked && (
+                <circle
+                  cx="38"
+                  cy="38"
+                  r="14"
+                  fill="none"
+                  stroke="#22c55e"
+                  strokeOpacity="0.45"
+                  strokeWidth="1.2"
+                  className="radar-lock-pulse"
+                />
+              )}
               <g
                 style={{
-                  transformOrigin: '36px 36px',
+                  transformOrigin: '38px 38px',
                   transform: `rotate(${gps.headingDegrees}deg)`,
                   transition: 'transform 0.3s ease',
                 }}
               >
-                <polygon points="36,24 30.5,41 36,37.5 41.5,41" fill="#38bdf8" />
+                <polygon points="38,24 32,43 38,39 44,43" fill="#38bdf8" />
               </g>
             </svg>
           </div>
@@ -75,20 +90,20 @@ export const GpsStatusCard: React.FC<GpsStatusCardProps> = ({ snapshot }) => {
               {compassDirection(gps.headingDegrees)} {gps.headingDegrees}°
             </span>
             <span className="muted-label num" data-testid="gps-alt">
-              Altitude {gps.altitudeMeters.toFixed(0)} m
+              Alt {gps.altitudeMeters.toFixed(0)} m
             </span>
           </div>
         </div>
 
         <div className="gps-coords-box">
           <div className="gps-row">
-            <span className="muted-label">Latitude</span>
+            <span className="muted-label">Lat</span>
             <span className="gps-val num" data-testid="gps-lat">
               {gps.latitude.toFixed(5)}°
             </span>
           </div>
           <div className="gps-row">
-            <span className="muted-label">Longitude</span>
+            <span className="muted-label">Lon</span>
             <span className="gps-val num" data-testid="gps-lon">
               {gps.longitude.toFixed(5)}°
             </span>

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTelemetry } from './telemetry/useTelemetry';
 import { CommandHeader } from './components/CommandHeader';
 import { RpmGaugeCard } from './components/RpmGaugeCard';
@@ -11,6 +12,8 @@ import { TelemetryTrendChart } from './components/TelemetryTrendChart';
 import { EngineControlDeck } from './components/EngineControlDeck';
 
 export function App() {
+  const [daylightMode, setDaylightMode] = useState(false);
+
   const {
     sourceMode,
     snapshot,
@@ -26,16 +29,24 @@ export function App() {
     toggleRecording,
   } = useTelemetry();
 
-  const ambientClass = snapshot.interlocks.estopLatched
-    ? 'gcs-screen ambient-danger'
+  const ambientTone = snapshot.interlocks.estopLatched
+    ? 'ambient-danger'
     : snapshot.enginePhase === 'WOT'
-    ? 'gcs-screen ambient-warn'
+    ? 'ambient-warn'
     : snapshot.enginePhase === 'RUNNING' || snapshot.enginePhase === 'IDLE'
-    ? 'gcs-screen ambient-running'
-    : 'gcs-screen';
+    ? 'ambient-running'
+    : '';
+
+  const rootClass = [
+    'gcs-screen',
+    ambientTone,
+    daylightMode ? 'theme-daylight' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
-    <div className={ambientClass} data-testid="gcs-root">
+    <div className={rootClass} data-testid="gcs-root">
       <CommandHeader
         snapshot={snapshot}
         sourceMode={sourceMode}
@@ -43,6 +54,8 @@ export function App() {
         recording={recording}
         recordingSeconds={recordingSeconds}
         lastAck={lastAck}
+        daylightMode={daylightMode}
+        onToggleDaylight={() => setDaylightMode((v) => !v)}
         onSwitchSource={switchSourceMode}
         onToggleRecord={toggleRecording}
         onEstop={() => sendCommand({ type: 'ESTOP' })}
