@@ -1,8 +1,9 @@
 import { useTelemetry } from './telemetry/useTelemetry';
 import { CommandHeader } from './components/CommandHeader';
 import { RpmGaugeCard } from './components/RpmGaugeCard';
-import { SpeedThrottleCard } from './components/SpeedThrottleCard';
+import { SpeedCard } from './components/SpeedCard';
 import { TemperatureCard } from './components/TemperatureCard';
+import { ThrottleCard } from './components/ThrottleCard';
 import { GpsStatusCard } from './components/GpsStatusCard';
 import { TelemetryTrendChart } from './components/TelemetryTrendChart';
 import { EngineControlDeck } from './components/EngineControlDeck';
@@ -40,11 +41,10 @@ export function App() {
 
       <main className="gcs-grid">
         <section className="telemetry-row">
-          <RpmGaugeCard
-            snapshot={snapshot}
-            onResetPeak={() => sendCommand({ type: 'RESET_PEAK_RPM' })}
-          />
-          <SpeedThrottleCard
+          <RpmGaugeCard snapshot={snapshot} />
+          <SpeedCard snapshot={snapshot} />
+          <TemperatureCard snapshot={snapshot} />
+          <ThrottleCard
             snapshot={snapshot}
             onSetAuthority={(authority) =>
               sendCommand({ type: 'SET_THROTTLE_AUTHORITY', authority })
@@ -53,7 +53,6 @@ export function App() {
               sendCommand({ type: 'SET_THROTTLE_US', microseconds })
             }
           />
-          <TemperatureCard snapshot={snapshot} />
           <GpsStatusCard snapshot={snapshot} />
         </section>
 

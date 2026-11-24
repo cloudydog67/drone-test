@@ -1,5 +1,4 @@
 import React from 'react';
-import { AlertTriangle } from 'lucide-react';
 import { PanelCard } from './ui/PanelCard';
 import { StatusPill, type PillTone } from './ui/StatusPill';
 import { MetricBar } from './ui/MetricBar';
@@ -13,32 +12,24 @@ export interface TemperatureCardProps {
   snapshot: TelemetrySnapshot;
 }
 
-function formatFaultLabel(fault: TemperatureFault): string {
+function formatTempStatus(fault: TemperatureFault): { label: string; tone: PillTone } {
   switch (fault) {
     case 'NOMINAL':
-      return 'Normal';
+      return { label: 'Safe', tone: 'go' };
     case 'WARN_HIGH':
-      return 'High Temp';
+      return { label: 'Hot', tone: 'warn' };
     case 'OVERHEAT':
-      return 'Overheat';
+      return { label: 'Overheating', tone: 'danger' };
     case 'OPEN_PROBE':
-      return 'Probe Open';
+      return { label: 'No Sensor', tone: 'danger' };
     case 'REVERSED_POLARITY':
-      return 'Reversed T+/T-';
+      return { label: 'Check Wire', tone: 'danger' };
   }
 }
 
 export const TemperatureCard: React.FC<TemperatureCardProps> = ({ snapshot }) => {
-  const { temperatureC, temperatureFault, temperatureTrendCPerSec } = snapshot;
-
-  const tone: PillTone =
-    temperatureFault === 'OVERHEAT' ||
-    temperatureFault === 'OPEN_PROBE' ||
-    temperatureFault === 'REVERSED_POLARITY'
-      ? 'danger'
-      : temperatureFault === 'WARN_HIGH'
-      ? 'warn'
-      : 'go';
+  const { temperatureC, temperatureFault } = snapshot;
+  const status = formatTempStatus(temperatureFault);
 
   const barPercent =
     temperatureC === null
@@ -50,66 +41,42 @@ export const TemperatureCard: React.FC<TemperatureCardProps> = ({ snapshot }) =>
 
   return (
     <PanelCard
-      title="Cylinder Temp"
+      title="Temperature"
       testId="temp-card"
-      badge={<StatusPill label={formatFaultLabel(temperatureFault)} tone={tone} dot />}
+      badge={<StatusPill label={status.label} tone={status.tone} dot />}
     >
-      <div className="temp-card-content">
-        <div className="temp-hero-box">
-          <div className="metric-hero-row">
-            <span
-              className={`metric-hero-xl num text-tone-${tone}`}
-              data-testid="temp-value"
-            >
-              {temperatureC === null ? 'Error' : temperatureC.toFixed(1)}
-            </span>
-            <span className="metric-unit">°C</span>
-          </div>
-          <div className="temp-trend num">
-            Rate: {temperatureTrendCPerSec >= 0 ? '+' : ''}
-            {temperatureTrendCPerSec.toFixed(2)} °C/s
-          </div>
+      <div className="simple-metric-body">
+        <div className="big-value-group">
+          <span
+            className={`big-number num text-tone-${status.tone}`}
+            data-testid="temp-value"
+          >
+            {temperatureC === null ? '--' : temperatureC.toFixed(0)}
+          </span>
+          <span className="big-unit">°C</span>
         </div>
 
-        <div className="metric-block">
+        <div className="bar-section">
           <MetricBar
             percent={barPercent}
-            tone={tone === 'go' ? 'accent' : tone}
-            height={9}
+            tone={status.tone === 'go' ? 'go' : status.tone}
+            height={10}
             markers={[
-              { percent: warnMarker, tone: 'warn', title: `Warning ${DEFAULT_THRESHOLDS.tempWarnC}°C` },
-              { percent: critMarker, tone: 'danger', title: `Critical ${DEFAULT_THRESHOLDS.tempCritC}°C` },
+              { percent: warnMarker, tone: 'warn', title: `Hot ${DEFAULT_THRESHOLDS.tempWarnC}°C` },
+              { percent: critMarker, tone: 'danger', title: `Limit ${DEFAULT_THRESHOLDS.tempCritC}°C` },
             ]}
           />
           <div className="scale-caption num">
-            <span>0°C</span>
-            <span>Warn {DEFAULT_THRESHOLDS.tempWarnC}°C</span>
-            <span>Max {DEFAULT_THRESHOLDS.tempCritC}°C</span>
+            <span>Safe</span>
+            <span>Hot {DEFAULT_THRESHOLDS.tempWarnC}°</span>
+            <span>Limit {DEFAULT_THRESHOLDS.tempCritC}°</span>
           </div>
         </div>
 
-        <div className="temp-spec-grid">
-          <div className="substat">
-            <span className="substat-label">Probe</span>
-            <span className="substat-value">MAX6675</span>
-          </div>
-          <div className="substat">
-            <span className="substat-label">Board Limit</span>
-            <span className="substat-value num">85 °C</span>
-          </div>
+        <div className="card-footer-line">
+          <span className="muted-label">Engine Heat</span>
+          <span className={`footer-val text-tone-${status.tone}`}>{status.label}</span>
         </div>
-
-        {temperatureFault !== 'NOMINAL' && (
-          <div className={`inline-alert alert-${tone}`}>
-            <AlertTriangle size={14} />
-            <span>
-              {temperatureFault === 'OPEN_PROBE' && 'Thermocouple disconnected (NaN)'}
-              {temperatureFault === 'REVERSED_POLARITY' && 'Temperature dropping — check T+/T- wiring'}
-              {temperatureFault === 'WARN_HIGH' && 'High cylinder temperature — reduce throttle'}
-              {temperatureFault === 'OVERHEAT' && 'Overheat limit exceeded — cut ignition'}
-            </span>
-          </div>
-        )}
       </div>
     </PanelCard>
   );

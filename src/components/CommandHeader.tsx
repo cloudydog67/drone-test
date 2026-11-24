@@ -26,6 +26,32 @@ function formatDuration(totalSeconds: number): string {
   return `${mins}:${secs}`;
 }
 
+function getOverallStatus(
+  snapshot: TelemetrySnapshot,
+  watchdogStale: boolean
+): { label: string; dotClass: string } {
+  if (snapshot.interlocks.estopLatched) {
+    return { label: 'Emergency Stopped', dotClass: 'dot dot-danger' };
+  }
+  if (watchdogStale || !snapshot.interlocks.edgeLinkOnline) {
+    return { label: 'Signal Lost', dotClass: 'dot dot-danger' };
+  }
+  if (
+    snapshot.temperatureFault === 'OVERHEAT' ||
+    snapshot.temperatureFault === 'OPEN_PROBE' ||
+    snapshot.temperatureFault === 'REVERSED_POLARITY'
+  ) {
+    return { label: 'Temp Warning', dotClass: 'dot dot-danger' };
+  }
+  if (snapshot.enginePhase === 'RUNNING' || snapshot.enginePhase === 'IDLE' || snapshot.enginePhase === 'WOT') {
+    return { label: 'Engine Running', dotClass: 'dot dot-go' };
+  }
+  if (snapshot.interlocks.armed) {
+    return { label: 'Ready to Start', dotClass: 'dot dot-warn' };
+  }
+  return { label: 'Standby', dotClass: 'dot dot-go' };
+}
+
 export const CommandHeader: React.FC<CommandHeaderProps> = ({
   snapshot,
   sourceMode,
@@ -39,52 +65,33 @@ export const CommandHeader: React.FC<CommandHeaderProps> = ({
   onClearEstop,
 }) => {
   const watchdogStale = watchdogAgeMs > DEFAULT_THRESHOLDS.watchdogLimitMs;
-  const { interlocks } = snapshot;
+  const overall = getOverallStatus(snapshot, watchdogStale);
 
   return (
     <header className="command-header" data-testid="command-header">
       <div className="header-group">
-        <span className="app-title">Engine Test Stand</span>
+        <span className="app-title">Drone Engine Monitor</span>
 
-        <div className="source-switch" role="group" aria-label="Telemetry Source">
+        <div className="source-switch" role="group" aria-label="Mode">
           <button
             type="button"
             className={sourceMode === 'SIM' ? 'source-btn active' : 'source-btn'}
             onClick={() => onSwitchSource('SIM')}
           >
-            Sim
+            Demo
           </button>
           <button
             type="button"
             className={sourceMode === 'ESP32' ? 'source-btn active' : 'source-btn'}
             onClick={() => onSwitchSource('ESP32')}
           >
-            ESP32
+            Live
           </button>
         </div>
 
-        <div className="status-row">
-          <span className="inline-status" data-testid="watchdog-status">
-            <span className={watchdogStale ? 'dot dot-danger' : 'dot dot-go'} />
-            <span className="num">
-              {watchdogStale ? `Link stale (${watchdogAgeMs} ms)` : `Link ${snapshot.heartbeatMs} ms`}
-            </span>
-          </span>
-
-          <span className="inline-status">
-            <span className={interlocks.edgeLinkOnline ? 'dot dot-go' : 'dot dot-danger'} />
-            <span>{interlocks.edgeLinkOnline ? 'Edge online' : 'Edge offline'}</span>
-          </span>
-
-          <span className="inline-status">
-            <span className={interlocks.knobAtIdle ? 'dot dot-go' : 'dot dot-warn'} />
-            <span>{interlocks.knobAtIdle ? 'Knob idle' : 'Knob high'}</span>
-          </span>
-
-          <span className="inline-status">
-            <span className={interlocks.armed ? 'dot dot-go' : 'dot dot-neutral'} />
-            <span>{interlocks.armed ? 'Armed' : 'Disarmed'}</span>
-          </span>
+        <div className="overall-status" data-testid="watchdog-status">
+          <span className={overall.dotClass} />
+          <span>{overall.label}</span>
         </div>
       </div>
 
@@ -101,30 +108,30 @@ export const CommandHeader: React.FC<CommandHeaderProps> = ({
           onClick={onToggleRecord}
           data-testid="record-csv-btn"
         >
-          {recording ? <Square size={12} /> : <Circle size={12} />}
-          <span className="num">{recording ? formatDuration(recordingSeconds) : 'Record CSV'}</span>
+          {recording ? <Square size={13} /> : <Circle size={13} />}
+          <span className="num">{recording ? `Recording ${formatDuration(recordingSeconds)}` : 'Record'}</span>
         </button>
 
-        {interlocks.estopLatched && (
+        {snapshot.interlocks.estopLatched && (
           <button
             type="button"
             className="reset-estop-btn"
             onClick={onClearEstop}
             data-testid="clear-estop-btn"
           >
-            <RotateCcw size={13} />
+            <RotateCcw size={14} />
             <span>Reset</span>
           </button>
         )}
 
         <button
           type="button"
-          className={interlocks.estopLatched ? 'estop-trigger latched' : 'estop-trigger'}
+          className={snapshot.interlocks.estopLatched ? 'estop-trigger latched' : 'estop-trigger'}
           onClick={onEstop}
           data-testid="estop-btn"
         >
-          <OctagonAlert size={16} />
-          <span>E-STOP</span>
+          <OctagonAlert size={18} />
+          <span>EMERGENCY STOP</span>
         </button>
       </div>
     </header>

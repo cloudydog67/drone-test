@@ -1,15 +1,13 @@
 import React from 'react';
-import { RotateCcw } from 'lucide-react';
 import { PanelCard } from './ui/PanelCard';
-import { StatusPill } from './ui/StatusPill';
+import { StatusPill, type PillTone } from './ui/StatusPill';
 import { DEFAULT_THRESHOLDS, type TelemetrySnapshot } from '../telemetry/telemetryTypes';
 
 export interface RpmGaugeCardProps {
   snapshot: TelemetrySnapshot;
-  onResetPeak: () => void;
 }
 
-const CENTER = 105;
+const CENTER = 100;
 const START_ANGLE = 135;
 const SWEEP_ANGLE = 270;
 
@@ -25,137 +23,70 @@ function arcPath(radius: number, startDeg: number, endDeg: number): string {
   return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArc} 0 ${end.x} ${end.y}`;
 }
 
-function formatPhase(phase: TelemetrySnapshot['enginePhase']): string {
+function formatPhase(phase: TelemetrySnapshot['enginePhase']): { label: string; tone: PillTone } {
   switch (phase) {
     case 'STOPPED':
-      return 'Stopped';
+      return { label: 'Off', tone: 'neutral' };
     case 'CRANKING':
-      return 'Cranking';
+      return { label: 'Starting', tone: 'accent' };
     case 'IDLE':
-      return 'Idle';
+      return { label: 'Idle', tone: 'go' };
     case 'RUNNING':
-      return 'Running';
+      return { label: 'Running', tone: 'go' };
     case 'WOT':
-      return 'Max Power';
+      return { label: 'Max Power', tone: 'warn' };
     case 'E-STOP':
-      return 'E-Stop';
+      return { label: 'Stopped', tone: 'danger' };
   }
 }
 
-export const RpmGaugeCard: React.FC<RpmGaugeCardProps> = ({ snapshot, onResetPeak }) => {
+export const RpmGaugeCard: React.FC<RpmGaugeCardProps> = ({ snapshot }) => {
   const maxRpm = DEFAULT_THRESHOLDS.rpmMaxScale;
   const redline = DEFAULT_THRESHOLDS.rpmRedline;
-
-  const rpmRatio = Math.max(0, Math.min(1, snapshot.rpm / maxRpm));
-  const peakRatio = Math.max(0, Math.min(1, snapshot.peakRpm / maxRpm));
-  const needleAngle = START_ANGLE + rpmRatio * SWEEP_ANGLE;
-  const peakAngle = START_ANGLE + peakRatio * SWEEP_ANGLE;
+  const ratio = Math.max(0, Math.min(1, snapshot.rpm / maxRpm));
+  const needleAngle = START_ANGLE + ratio * SWEEP_ANGLE;
   const redStart = START_ANGLE + (redline / maxRpm) * SWEEP_ANGLE;
   const redEnd = START_ANGLE + SWEEP_ANGLE;
-
-  const tip = polar(needleAngle, 70);
-  const left = polar(needleAngle - 4.5, 83);
-  const right = polar(needleAngle + 4.5, 83);
-  const peakPoint = polar(peakAngle, 76);
-
   const inRedline = snapshot.rpm >= redline;
-  const phaseTone =
-    snapshot.enginePhase === 'E-STOP'
-      ? 'danger'
-      : snapshot.enginePhase === 'WOT'
-      ? 'warn'
-      : snapshot.enginePhase === 'RUNNING' || snapshot.enginePhase === 'IDLE'
-      ? 'go'
-      : snapshot.enginePhase === 'CRANKING'
-      ? 'accent'
-      : 'neutral';
+  const phase = formatPhase(snapshot.enginePhase);
 
   return (
     <PanelCard
-      title="Engine RPM"
+      title="RPM"
       testId="rpm-card"
-      badge={<StatusPill label={formatPhase(snapshot.enginePhase)} tone={phaseTone} dot />}
+      badge={<StatusPill label={phase.label} tone={phase.tone} dot />}
     >
-      <div className="rpm-card-content">
-        <svg viewBox="0 0 210 210" className="rpm-svg" aria-label="Engine RPM Gauge">
-          <circle cx={CENTER} cy={CENTER} r="90" className="dial-outer" />
-          <circle cx={CENTER} cy={CENTER} r="66" className="dial-inner" />
-
-          {rpmRatio > 0.005 && (
+      <div className="rpm-simple-body">
+        <svg viewBox="0 0 200 170" className="rpm-arc-svg" aria-label="Engine RPM">
+          <path
+            d={arcPath(74, START_ANGLE, START_ANGLE + SWEEP_ANGLE)}
+            fill="none"
+            stroke="#272b33"
+            strokeWidth="12"
+            strokeLinecap="round"
+          />
+          <path
+            d={arcPath(74, redStart, redEnd)}
+            fill="none"
+            stroke="rgba(239, 68, 68, 0.35)"
+            strokeWidth="12"
+            strokeLinecap="round"
+          />
+          {ratio > 0.005 && (
             <path
-              d={arcPath(68, START_ANGLE, needleAngle)}
+              d={arcPath(74, START_ANGLE, needleAngle)}
               fill="none"
               stroke={inRedline ? '#ef4444' : '#3b82f6'}
-              strokeWidth="4.5"
+              strokeWidth="12"
               strokeLinecap="round"
             />
           )}
-
-          <path
-            d={arcPath(84, redStart, redEnd)}
-            fill="none"
-            stroke="#ef4444"
-            strokeOpacity="0.85"
-            strokeWidth="3"
-          />
-
-          {Array.from({ length: 51 }).map((_, idx) => {
-            const ratio = idx / 50;
-            const deg = START_ANGLE + ratio * SWEEP_ANGLE;
-            const major = idx % 5 === 0;
-            const redZone = ratio * maxRpm >= redline;
-            const p1 = polar(deg, 84);
-            const p2 = polar(deg, major ? 73 : 78);
-            return (
-              <line
-                key={idx}
-                x1={p1.x}
-                y1={p1.y}
-                x2={p2.x}
-                y2={p2.y}
-                stroke={redZone ? '#f87171' : major ? '#d1d5db' : '#4b5563'}
-                strokeWidth={major ? 1.8 : 1}
-              />
-            );
-          })}
-
-          {Array.from({ length: 11 }).map((_, idx) => {
-            const ratio = idx / 10;
-            const deg = START_ANGLE + ratio * SWEEP_ANGLE;
-            const pos = polar(deg, 95);
-            return (
-              <text
-                key={idx}
-                x={pos.x}
-                y={pos.y}
-                textAnchor="middle"
-                dominantBaseline="central"
-                fill={ratio * maxRpm >= redline ? '#f87171' : '#9ca3af'}
-                fontSize="10"
-                fontWeight="600"
-                fontFamily="Inter, Segoe UI, sans-serif"
-              >
-                {idx}
-              </text>
-            );
-          })}
-
-          {snapshot.peakRpm > 100 && (
-            <circle cx={peakPoint.x} cy={peakPoint.y} r="3" fill="#eab308" />
-          )}
-
-          <polygon
-            points={`${tip.x},${tip.y} ${left.x},${left.y} ${right.x},${right.y}`}
-            fill="#ef4444"
-          />
-
-          <circle cx={CENTER} cy={CENTER} r="49" className="dial-hub" />
           <text
             x={CENTER}
-            y={CENTER - 1}
+            y={CENTER + 4}
             textAnchor="middle"
             fill={inRedline ? '#f87171' : '#f9fafb'}
-            fontSize="26"
+            fontSize="30"
             fontWeight="700"
             fontFamily="Inter, Segoe UI, sans-serif"
             data-testid="rpm-value"
@@ -164,10 +95,10 @@ export const RpmGaugeCard: React.FC<RpmGaugeCardProps> = ({ snapshot, onResetPea
           </text>
           <text
             x={CENTER}
-            y={CENTER + 17}
+            y={CENTER + 26}
             textAnchor="middle"
             fill="#9ca3af"
-            fontSize="11"
+            fontSize="12"
             fontWeight="500"
             fontFamily="Inter, Segoe UI, sans-serif"
           >
@@ -175,24 +106,9 @@ export const RpmGaugeCard: React.FC<RpmGaugeCardProps> = ({ snapshot, onResetPea
           </text>
         </svg>
 
-        <div className="rpm-subgrid">
-          <div className="substat">
-            <span className="substat-label">Peak</span>
-            <span className="substat-value num">{snapshot.peakRpm.toLocaleString()}</span>
-          </div>
-          <div className="substat">
-            <span className="substat-label">Hall Backup</span>
-            <span className="substat-value num">{snapshot.hallRpm.toLocaleString()}</span>
-          </div>
-          <button
-            type="button"
-            className="icon-chip-btn"
-            onClick={onResetPeak}
-            aria-label="Reset peak RPM"
-            title="Reset peak RPM"
-          >
-            <RotateCcw size={14} />
-          </button>
+        <div className="card-footer-line">
+          <span className="muted-label">Peak</span>
+          <span className="footer-val num">{snapshot.peakRpm.toLocaleString()} RPM</span>
         </div>
       </div>
     </PanelCard>

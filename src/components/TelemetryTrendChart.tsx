@@ -21,55 +21,52 @@ export interface TelemetryTrendChartProps {
   onTogglePause: () => void;
 }
 
+type ChartMetric = 'rpm' | 'speedKmh' | 'temperatureC' | 'throttlePercent';
+
+const METRIC_OPTIONS: {
+  key: ChartMetric;
+  label: string;
+  unit: string;
+  color: string;
+  max: number;
+}[] = [
+  { key: 'rpm', label: 'RPM', unit: 'RPM', color: '#3b82f6', max: DEFAULT_THRESHOLDS.rpmMaxScale },
+  { key: 'speedKmh', label: 'Speed', unit: 'km/h', color: '#e5e7eb', max: DEFAULT_THRESHOLDS.speedMaxKmh },
+  { key: 'temperatureC', label: 'Temp', unit: '°C', color: '#eab308', max: DEFAULT_THRESHOLDS.tempMaxScaleC },
+  { key: 'throttlePercent', label: 'Throttle', unit: '%', color: '#22c55e', max: 100 },
+];
+
 export const TelemetryTrendChart: React.FC<TelemetryTrendChartProps> = ({
   history,
   paused,
   onTogglePause,
 }) => {
-  const [showRpm, setShowRpm] = useState(true);
-  const [showSpeed, setShowSpeed] = useState(true);
-  const [showTemp, setShowTemp] = useState(true);
-  const [showThrottle, setShowThrottle] = useState(true);
+  const [selectedMetric, setSelectedMetric] = useState<ChartMetric>('rpm');
+  const active = METRIC_OPTIONS.find((item) => item.key === selectedMetric) ?? METRIC_OPTIONS[0];
 
   return (
     <PanelCard
-      title="Telemetry History"
+      title="Live Graph"
       testId="telemetry-chart-card"
       badge={
         <div className="chart-toolbar">
-          <button
-            type="button"
-            className={showRpm ? 'series-chip active-rpm' : 'series-chip'}
-            onClick={() => setShowRpm((v) => !v)}
-          >
-            RPM
-          </button>
-          <button
-            type="button"
-            className={showSpeed ? 'series-chip active-speed' : 'series-chip'}
-            onClick={() => setShowSpeed((v) => !v)}
-          >
-            Speed
-          </button>
-          <button
-            type="button"
-            className={showTemp ? 'series-chip active-temp' : 'series-chip'}
-            onClick={() => setShowTemp((v) => !v)}
-          >
-            Temp
-          </button>
-          <button
-            type="button"
-            className={showThrottle ? 'series-chip active-thr' : 'series-chip'}
-            onClick={() => setShowThrottle((v) => !v)}
-          >
-            Throttle
-          </button>
+          {METRIC_OPTIONS.map((option) => (
+            <button
+              key={option.key}
+              type="button"
+              className={
+                selectedMetric === option.key ? 'series-chip is-selected' : 'series-chip'
+              }
+              onClick={() => setSelectedMetric(option.key)}
+            >
+              {option.label}
+            </button>
+          ))}
           <button
             type="button"
             className="chart-pause-btn"
             onClick={onTogglePause}
-            aria-label={paused ? 'Resume chart' : 'Pause chart'}
+            aria-label={paused ? 'Resume graph' : 'Pause graph'}
           >
             {paused ? <Play size={12} /> : <Pause size={12} />}
             <span>{paused ? 'Resume' : 'Pause'}</span>
@@ -79,88 +76,40 @@ export const TelemetryTrendChart: React.FC<TelemetryTrendChartProps> = ({
     >
       <div className="chart-container">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={history} margin={{ top: 8, right: 12, left: -12, bottom: 0 }}>
+          <LineChart data={history} margin={{ top: 10, right: 16, left: -4, bottom: 0 }}>
             <CartesianGrid stroke="#252830" strokeDasharray="3 3" vertical={false} />
             <XAxis
               dataKey="timeLabel"
               stroke="#6b7280"
-              tick={{ fill: '#9ca3af', fontSize: 11, fontFamily: 'Inter, Segoe UI, sans-serif' }}
-              minTickGap={30}
+              tick={{ fill: '#9ca3af', fontSize: 12, fontFamily: 'Inter, Segoe UI, sans-serif' }}
+              minTickGap={34}
             />
             <YAxis
-              yAxisId="rpm"
-              domain={[0, DEFAULT_THRESHOLDS.rpmMaxScale]}
-              stroke="#3b82f6"
-              tick={{ fill: '#9ca3af', fontSize: 11, fontFamily: 'Inter, Segoe UI, sans-serif' }}
-              tickFormatter={(value: number) => `${Math.round(value / 1000)}k`}
-              width={40}
-            />
-            <YAxis
-              yAxisId="aux"
-              orientation="right"
-              domain={[0, DEFAULT_THRESHOLDS.tempMaxScaleC]}
+              domain={[0, active.max]}
               stroke="#6b7280"
-              tick={{ fill: '#9ca3af', fontSize: 11, fontFamily: 'Inter, Segoe UI, sans-serif' }}
-              width={36}
+              tick={{ fill: '#9ca3af', fontSize: 12, fontFamily: 'Inter, Segoe UI, sans-serif' }}
+              width={48}
             />
             <Tooltip
               contentStyle={{
                 backgroundColor: '#16181d',
                 border: '1px solid #303540',
                 borderRadius: 8,
-                fontSize: 12,
+                fontSize: 13,
                 fontFamily: 'Inter, Segoe UI, sans-serif',
                 color: '#f9fafb',
               }}
+              formatter={(value) => [`${value} ${active.unit}`, active.label]}
             />
-            {showRpm && (
-              <Line
-                yAxisId="rpm"
-                type="monotone"
-                dataKey="rpm"
-                name="RPM"
-                stroke="#3b82f6"
-                strokeWidth={2.2}
-                dot={false}
-                isAnimationActive={false}
-              />
-            )}
-            {showSpeed && (
-              <Line
-                yAxisId="aux"
-                type="monotone"
-                dataKey="speedKmh"
-                name="Speed (km/h)"
-                stroke="#e5e7eb"
-                strokeWidth={1.7}
-                dot={false}
-                isAnimationActive={false}
-              />
-            )}
-            {showTemp && (
-              <Line
-                yAxisId="aux"
-                type="monotone"
-                dataKey="temperatureC"
-                name="Temp (°C)"
-                stroke="#eab308"
-                strokeWidth={2}
-                dot={false}
-                isAnimationActive={false}
-              />
-            )}
-            {showThrottle && (
-              <Line
-                yAxisId="aux"
-                type="monotone"
-                dataKey="throttlePercent"
-                name="Throttle (%)"
-                stroke="#22c55e"
-                strokeWidth={1.8}
-                dot={false}
-                isAnimationActive={false}
-              />
-            )}
+            <Line
+              type="monotone"
+              dataKey={active.key}
+              name={active.label}
+              stroke={active.color}
+              strokeWidth={2.8}
+              dot={false}
+              isAnimationActive={false}
+            />
           </LineChart>
         </ResponsiveContainer>
       </div>
