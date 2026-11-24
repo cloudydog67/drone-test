@@ -1,6 +1,5 @@
 import React from 'react';
-import { Circle, OctagonAlert, Radio, RotateCcw, Square } from 'lucide-react';
-import { StatusPill } from './ui/StatusPill';
+import { Circle, OctagonAlert, RotateCcw, Square } from 'lucide-react';
 import {
   DEFAULT_THRESHOLDS,
   type CommandAck,
@@ -45,10 +44,7 @@ export const CommandHeader: React.FC<CommandHeaderProps> = ({
   return (
     <header className="command-header" data-testid="command-header">
       <div className="header-group">
-        <div className="callsign-block">
-          <span className="callsign-code">UAS-DYNO-01</span>
-          <span className="callsign-sub">TWIN-IC TEST CONSOLE</span>
-        </div>
+        <span className="app-title">Engine Test Stand</span>
 
         <div className="source-switch" role="group" aria-label="Telemetry Source">
           <button
@@ -56,7 +52,7 @@ export const CommandHeader: React.FC<CommandHeaderProps> = ({
             className={sourceMode === 'SIM' ? 'source-btn active' : 'source-btn'}
             onClick={() => onSwitchSource('SIM')}
           >
-            SIM
+            Sim
           </button>
           <button
             type="button"
@@ -67,43 +63,34 @@ export const CommandHeader: React.FC<CommandHeaderProps> = ({
           </button>
         </div>
 
-        <StatusPill
-          testId="watchdog-status"
-          icon={<Radio size={13} />}
-          label={watchdogStale ? `LINK STALE ${watchdogAgeMs}ms` : `LINK ${snapshot.heartbeatMs}ms`}
-          tone={watchdogStale ? 'danger' : 'go'}
-        />
+        <div className="status-row">
+          <span className="inline-status" data-testid="watchdog-status">
+            <span className={watchdogStale ? 'dot dot-danger' : 'dot dot-go'} />
+            <span className="num">
+              {watchdogStale ? `Link stale (${watchdogAgeMs} ms)` : `Link ${snapshot.heartbeatMs} ms`}
+            </span>
+          </span>
 
-        <div className="interlock-strip">
-          <StatusPill
-            label={interlocks.edgeLinkOnline ? 'EDGE OK' : 'EDGE LOST'}
-            tone={interlocks.edgeLinkOnline ? 'go' : 'danger'}
-            dot
-          />
-          <StatusPill
-            label={interlocks.knobAtIdle ? 'IDLE OK' : 'KNOB HIGH'}
-            tone={interlocks.knobAtIdle ? 'accent' : 'warn'}
-            dot
-          />
-          <StatusPill
-            label={interlocks.armed ? 'ARMED' : 'SAFE'}
-            tone={interlocks.armed ? 'go' : 'neutral'}
-            dot
-          />
-          <StatusPill
-            label={interlocks.ignitionOn ? 'CDI ON' : 'CDI OFF'}
-            tone={interlocks.ignitionOn ? 'warn' : 'neutral'}
-            dot
-          />
+          <span className="inline-status">
+            <span className={interlocks.edgeLinkOnline ? 'dot dot-go' : 'dot dot-danger'} />
+            <span>{interlocks.edgeLinkOnline ? 'Edge online' : 'Edge offline'}</span>
+          </span>
+
+          <span className="inline-status">
+            <span className={interlocks.knobAtIdle ? 'dot dot-go' : 'dot dot-warn'} />
+            <span>{interlocks.knobAtIdle ? 'Knob idle' : 'Knob high'}</span>
+          </span>
+
+          <span className="inline-status">
+            <span className={interlocks.armed ? 'dot dot-go' : 'dot dot-neutral'} />
+            <span>{interlocks.armed ? 'Armed' : 'Disarmed'}</span>
+          </span>
         </div>
       </div>
 
       <div className="header-group">
-        {lastAck && (
-          <span
-            className={lastAck.accepted ? 'ack-readout' : 'ack-readout ack-warn'}
-            data-testid="command-ack"
-          >
+        {lastAck && !lastAck.accepted && (
+          <span className="ack-notice" data-testid="command-ack">
             {lastAck.reason}
           </span>
         )}
@@ -115,7 +102,7 @@ export const CommandHeader: React.FC<CommandHeaderProps> = ({
           data-testid="record-csv-btn"
         >
           {recording ? <Square size={12} /> : <Circle size={12} />}
-          <span className="mono">{recording ? formatDuration(recordingSeconds) : 'REC CSV'}</span>
+          <span className="num">{recording ? formatDuration(recordingSeconds) : 'Record CSV'}</span>
         </button>
 
         {interlocks.estopLatched && (
@@ -126,7 +113,7 @@ export const CommandHeader: React.FC<CommandHeaderProps> = ({
             data-testid="clear-estop-btn"
           >
             <RotateCcw size={13} />
-            RESET
+            <span>Reset</span>
           </button>
         )}
 
@@ -138,7 +125,6 @@ export const CommandHeader: React.FC<CommandHeaderProps> = ({
         >
           <OctagonAlert size={16} />
           <span>E-STOP</span>
-          <kbd className="estop-key">ESC</kbd>
         </button>
       </div>
     </header>

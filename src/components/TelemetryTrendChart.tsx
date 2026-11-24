@@ -33,7 +33,7 @@ export const TelemetryTrendChart: React.FC<TelemetryTrendChartProps> = ({
 
   return (
     <PanelCard
-      title="LIVE TELEMETRY TREND"
+      title="Telemetry History"
       testId="telemetry-chart-card"
       badge={
         <div className="chart-toolbar">
@@ -49,21 +49,21 @@ export const TelemetryTrendChart: React.FC<TelemetryTrendChartProps> = ({
             className={showSpeed ? 'series-chip active-speed' : 'series-chip'}
             onClick={() => setShowSpeed((v) => !v)}
           >
-            SPEED
+            Speed
           </button>
           <button
             type="button"
             className={showTemp ? 'series-chip active-temp' : 'series-chip'}
             onClick={() => setShowTemp((v) => !v)}
           >
-            TEMP
+            Temp
           </button>
           <button
             type="button"
             className={showThrottle ? 'series-chip active-thr' : 'series-chip'}
             onClick={() => setShowThrottle((v) => !v)}
           >
-            THR %
+            Throttle
           </button>
           <button
             type="button"
@@ -72,26 +72,26 @@ export const TelemetryTrendChart: React.FC<TelemetryTrendChartProps> = ({
             aria-label={paused ? 'Resume chart' : 'Pause chart'}
           >
             {paused ? <Play size={12} /> : <Pause size={12} />}
-            <span>{paused ? 'RESUME' : 'PAUSE'}</span>
+            <span>{paused ? 'Resume' : 'Pause'}</span>
           </button>
         </div>
       }
     >
       <div className="chart-container">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={history} margin={{ top: 8, right: 14, left: -10, bottom: 0 }}>
-            <CartesianGrid stroke="#252a33" strokeDasharray="3 3" vertical={false} />
+          <LineChart data={history} margin={{ top: 8, right: 12, left: -12, bottom: 0 }}>
+            <CartesianGrid stroke="#252830" strokeDasharray="3 3" vertical={false} />
             <XAxis
               dataKey="timeLabel"
-              stroke="#64748b"
-              tick={{ fill: '#94a3b8', fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
-              minTickGap={28}
+              stroke="#6b7280"
+              tick={{ fill: '#9ca3af', fontSize: 11, fontFamily: 'Inter, Segoe UI, sans-serif' }}
+              minTickGap={30}
             />
             <YAxis
               yAxisId="rpm"
               domain={[0, DEFAULT_THRESHOLDS.rpmMaxScale]}
-              stroke="#38bdf8"
-              tick={{ fill: '#94a3b8', fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+              stroke="#3b82f6"
+              tick={{ fill: '#9ca3af', fontSize: 11, fontFamily: 'Inter, Segoe UI, sans-serif' }}
               tickFormatter={(value: number) => `${Math.round(value / 1000)}k`}
               width={40}
             />
@@ -99,18 +99,18 @@ export const TelemetryTrendChart: React.FC<TelemetryTrendChartProps> = ({
               yAxisId="aux"
               orientation="right"
               domain={[0, DEFAULT_THRESHOLDS.tempMaxScaleC]}
-              stroke="#94a3b8"
-              tick={{ fill: '#94a3b8', fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}
+              stroke="#6b7280"
+              tick={{ fill: '#9ca3af', fontSize: 11, fontFamily: 'Inter, Segoe UI, sans-serif' }}
               width={36}
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: '#111318',
-                border: '1px solid #334155',
+                backgroundColor: '#16181d',
+                border: '1px solid #303540',
                 borderRadius: 8,
-                fontSize: 11,
-                fontFamily: 'JetBrains Mono, monospace',
-                color: '#f8fafc',
+                fontSize: 12,
+                fontFamily: 'Inter, Segoe UI, sans-serif',
+                color: '#f9fafb',
               }}
             />
             {showRpm && (
@@ -119,7 +119,7 @@ export const TelemetryTrendChart: React.FC<TelemetryTrendChartProps> = ({
                 type="monotone"
                 dataKey="rpm"
                 name="RPM"
-                stroke="#38bdf8"
+                stroke="#3b82f6"
                 strokeWidth={2.2}
                 dot={false}
                 isAnimationActive={false}
@@ -130,9 +130,9 @@ export const TelemetryTrendChart: React.FC<TelemetryTrendChartProps> = ({
                 yAxisId="aux"
                 type="monotone"
                 dataKey="speedKmh"
-                name="SPEED km/h"
-                stroke="#a78bfa"
-                strokeWidth={1.8}
+                name="Speed (km/h)"
+                stroke="#e5e7eb"
+                strokeWidth={1.7}
                 dot={false}
                 isAnimationActive={false}
               />
@@ -142,8 +142,8 @@ export const TelemetryTrendChart: React.FC<TelemetryTrendChartProps> = ({
                 yAxisId="aux"
                 type="monotone"
                 dataKey="temperatureC"
-                name="TEMP °C"
-                stroke="#f59e0b"
+                name="Temp (°C)"
+                stroke="#eab308"
                 strokeWidth={2}
                 dot={false}
                 isAnimationActive={false}
@@ -154,7 +154,7 @@ export const TelemetryTrendChart: React.FC<TelemetryTrendChartProps> = ({
                 yAxisId="aux"
                 type="monotone"
                 dataKey="throttlePercent"
-                name="THR %"
+                name="Throttle (%)"
                 stroke="#22c55e"
                 strokeWidth={1.8}
                 dot={false}

@@ -25,6 +25,23 @@ function arcPath(radius: number, startDeg: number, endDeg: number): string {
   return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArc} 0 ${end.x} ${end.y}`;
 }
 
+function formatPhase(phase: TelemetrySnapshot['enginePhase']): string {
+  switch (phase) {
+    case 'STOPPED':
+      return 'Stopped';
+    case 'CRANKING':
+      return 'Cranking';
+    case 'IDLE':
+      return 'Idle';
+    case 'RUNNING':
+      return 'Running';
+    case 'WOT':
+      return 'Max Power';
+    case 'E-STOP':
+      return 'E-Stop';
+  }
+}
+
 export const RpmGaugeCard: React.FC<RpmGaugeCardProps> = ({ snapshot, onResetPeak }) => {
   const maxRpm = DEFAULT_THRESHOLDS.rpmMaxScale;
   const redline = DEFAULT_THRESHOLDS.rpmRedline;
@@ -55,9 +72,9 @@ export const RpmGaugeCard: React.FC<RpmGaugeCardProps> = ({ snapshot, onResetPea
 
   return (
     <PanelCard
-      title="ENGINE RPM"
+      title="Engine RPM"
       testId="rpm-card"
-      badge={<StatusPill label={snapshot.enginePhase} tone={phaseTone} />}
+      badge={<StatusPill label={formatPhase(snapshot.enginePhase)} tone={phaseTone} dot />}
     >
       <div className="rpm-card-content">
         <svg viewBox="0 0 210 210" className="rpm-svg" aria-label="Engine RPM Gauge">
@@ -68,7 +85,7 @@ export const RpmGaugeCard: React.FC<RpmGaugeCardProps> = ({ snapshot, onResetPea
             <path
               d={arcPath(68, START_ANGLE, needleAngle)}
               fill="none"
-              stroke={inRedline ? '#ef4444' : '#38bdf8'}
+              stroke={inRedline ? '#ef4444' : '#3b82f6'}
               strokeWidth="4.5"
               strokeLinecap="round"
             />
@@ -78,7 +95,7 @@ export const RpmGaugeCard: React.FC<RpmGaugeCardProps> = ({ snapshot, onResetPea
             d={arcPath(84, redStart, redEnd)}
             fill="none"
             stroke="#ef4444"
-            strokeOpacity="0.8"
+            strokeOpacity="0.85"
             strokeWidth="3"
           />
 
@@ -96,7 +113,7 @@ export const RpmGaugeCard: React.FC<RpmGaugeCardProps> = ({ snapshot, onResetPea
                 y1={p1.y}
                 x2={p2.x}
                 y2={p2.y}
-                stroke={redZone ? '#f87171' : major ? '#cbd5e1' : '#475569'}
+                stroke={redZone ? '#f87171' : major ? '#d1d5db' : '#4b5563'}
                 strokeWidth={major ? 1.8 : 1}
               />
             );
@@ -113,10 +130,10 @@ export const RpmGaugeCard: React.FC<RpmGaugeCardProps> = ({ snapshot, onResetPea
                 y={pos.y}
                 textAnchor="middle"
                 dominantBaseline="central"
-                fill={ratio * maxRpm >= redline ? '#f87171' : '#94a3b8'}
-                fontSize="9.5"
-                fontWeight="700"
-                fontFamily="JetBrains Mono, monospace"
+                fill={ratio * maxRpm >= redline ? '#f87171' : '#9ca3af'}
+                fontSize="10"
+                fontWeight="600"
+                fontFamily="Inter, Segoe UI, sans-serif"
               >
                 {idx}
               </text>
@@ -124,7 +141,7 @@ export const RpmGaugeCard: React.FC<RpmGaugeCardProps> = ({ snapshot, onResetPea
           })}
 
           {snapshot.peakRpm > 100 && (
-            <circle cx={peakPoint.x} cy={peakPoint.y} r="3" fill="#f59e0b" />
+            <circle cx={peakPoint.x} cy={peakPoint.y} r="3" fill="#eab308" />
           )}
 
           <polygon
@@ -135,12 +152,12 @@ export const RpmGaugeCard: React.FC<RpmGaugeCardProps> = ({ snapshot, onResetPea
           <circle cx={CENTER} cy={CENTER} r="49" className="dial-hub" />
           <text
             x={CENTER}
-            y={CENTER - 2}
+            y={CENTER - 1}
             textAnchor="middle"
-            fill={inRedline ? '#f87171' : '#f8fafc'}
+            fill={inRedline ? '#f87171' : '#f9fafb'}
             fontSize="26"
             fontWeight="700"
-            fontFamily="JetBrains Mono, monospace"
+            fontFamily="Inter, Segoe UI, sans-serif"
             data-testid="rpm-value"
           >
             {snapshot.rpm.toLocaleString()}
@@ -149,11 +166,10 @@ export const RpmGaugeCard: React.FC<RpmGaugeCardProps> = ({ snapshot, onResetPea
             x={CENTER}
             y={CENTER + 17}
             textAnchor="middle"
-            fill="#94a3b8"
-            fontSize="10"
-            fontWeight="700"
-            fontFamily="JetBrains Mono, monospace"
-            letterSpacing="0.14em"
+            fill="#9ca3af"
+            fontSize="11"
+            fontWeight="500"
+            fontFamily="Inter, Segoe UI, sans-serif"
           >
             RPM
           </text>
@@ -161,12 +177,12 @@ export const RpmGaugeCard: React.FC<RpmGaugeCardProps> = ({ snapshot, onResetPea
 
         <div className="rpm-subgrid">
           <div className="substat">
-            <span className="substat-label">PEAK</span>
-            <span className="substat-value mono">{snapshot.peakRpm.toLocaleString()}</span>
+            <span className="substat-label">Peak</span>
+            <span className="substat-value num">{snapshot.peakRpm.toLocaleString()}</span>
           </div>
           <div className="substat">
-            <span className="substat-label">HALL</span>
-            <span className="substat-value mono">{snapshot.hallRpm.toLocaleString()}</span>
+            <span className="substat-label">Hall Backup</span>
+            <span className="substat-value num">{snapshot.hallRpm.toLocaleString()}</span>
           </div>
           <button
             type="button"
@@ -175,7 +191,7 @@ export const RpmGaugeCard: React.FC<RpmGaugeCardProps> = ({ snapshot, onResetPea
             aria-label="Reset peak RPM"
             title="Reset peak RPM"
           >
-            <RotateCcw size={13} />
+            <RotateCcw size={14} />
           </button>
         </div>
       </div>

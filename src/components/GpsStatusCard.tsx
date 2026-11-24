@@ -1,11 +1,23 @@
 import React from 'react';
-import { Compass, Satellite } from 'lucide-react';
 import { PanelCard } from './ui/PanelCard';
 import { StatusPill, type PillTone } from './ui/StatusPill';
-import type { TelemetrySnapshot } from '../telemetry/telemetryTypes';
+import type { GpsFixMode, TelemetrySnapshot } from '../telemetry/telemetryTypes';
 
 export interface GpsStatusCardProps {
   snapshot: TelemetrySnapshot;
+}
+
+function formatFix(fix: GpsFixMode): string {
+  switch (fix) {
+    case 'NO_FIX':
+      return 'No Fix';
+    case '2D_FIX':
+      return '2D Fix';
+    case '3D_FIX':
+      return '3D Fix';
+    case 'RTK_FIX':
+      return 'RTK Fix';
+  }
 }
 
 export const GpsStatusCard: React.FC<GpsStatusCardProps> = ({ snapshot }) => {
@@ -24,13 +36,13 @@ export const GpsStatusCard: React.FC<GpsStatusCardProps> = ({ snapshot }) => {
 
   return (
     <PanelCard
-      title="GPS NAVIGATION"
+      title="GPS"
       testId="gps-card"
       badge={
         <StatusPill
-          icon={<Satellite size={12} />}
-          label={`${gps.fix.replace('_', ' ')} • ${gps.satellites} SAT`}
+          label={`${formatFix(gps.fix)} · ${gps.satellites} sat`}
           tone={fixTone}
+          dot
         />
       }
     >
@@ -38,14 +50,14 @@ export const GpsStatusCard: React.FC<GpsStatusCardProps> = ({ snapshot }) => {
         <div className="gps-top-row">
           <div className="gps-coords">
             <div className="coord-item">
-              <span className="substat-label">LATITUDE</span>
-              <span className="coord-value mono" data-testid="gps-lat">
+              <span className="substat-label">Latitude</span>
+              <span className="coord-value num" data-testid="gps-lat">
                 {gps.latitude.toFixed(6)}°
               </span>
             </div>
             <div className="coord-item">
-              <span className="substat-label">LONGITUDE</span>
-              <span className="coord-value mono" data-testid="gps-lon">
+              <span className="substat-label">Longitude</span>
+              <span className="coord-value num" data-testid="gps-lon">
                 {gps.longitude.toFixed(6)}°
               </span>
             </div>
@@ -73,31 +85,31 @@ export const GpsStatusCard: React.FC<GpsStatusCardProps> = ({ snapshot }) => {
               y1="48"
               x2={arrowX}
               y2={arrowY}
-              stroke="#38bdf8"
+              stroke="#3b82f6"
               strokeWidth="2.4"
               strokeLinecap="round"
             />
             <circle cx={arrowX} cy={arrowY} r="3.5" fill="#ef4444" />
-            <circle cx="48" cy="48" r="3" fill="#f8fafc" />
+            <circle cx="48" cy="48" r="3" fill="#f9fafb" />
           </svg>
         </div>
 
         <div className="gps-metrics-row">
           <div className="substat">
-            <span className="substat-label">ALTITUDE</span>
-            <span className="substat-value mono" data-testid="gps-alt">
-              {gps.altitudeMeters.toFixed(1)} M
+            <span className="substat-label">Altitude</span>
+            <span className="substat-value num" data-testid="gps-alt">
+              {gps.altitudeMeters.toFixed(1)} m
             </span>
           </div>
           <div className="substat">
-            <span className="substat-label">HEADING</span>
-            <span className="substat-value mono" data-testid="gps-hdg">
-              <Compass size={12} /> {String(gps.headingDegrees).padStart(3, '0')}°
+            <span className="substat-label">Heading</span>
+            <span className="substat-value num" data-testid="gps-hdg">
+              {String(gps.headingDegrees).padStart(3, '0')}°
             </span>
           </div>
           <div className="substat">
             <span className="substat-label">HDOP</span>
-            <span className="substat-value mono">{gps.hdop.toFixed(2)}</span>
+            <span className="substat-value num">{gps.hdop.toFixed(2)}</span>
           </div>
         </div>
       </div>

@@ -29,34 +29,34 @@ export const SpeedThrottleCard: React.FC<SpeedThrottleCardProps> = ({
 
   return (
     <PanelCard
-      title="SPEED & THROTTLE"
+      title="Speed & Throttle"
       testId="speed-throttle-card"
       badge={
         <StatusPill
-          label={isSw ? 'SW OVERRIDE' : 'HW KNOB'}
-          tone={isSw ? 'warn' : 'accent'}
+          label={isSw ? 'Software Control' : 'Physical Knob'}
+          tone={isSw ? 'warn' : 'neutral'}
         />
       }
     >
       <div className="split-telemetry">
         <div className="metric-block">
           <div className="metric-head">
-            <span className="metric-label">GROUND / AIR SPEED</span>
-            <span className="metric-secondary mono" data-testid="speed-knots">
-              {snapshot.speedKnots.toFixed(1)} KT
+            <span className="metric-label">Speed</span>
+            <span className="metric-secondary num" data-testid="speed-knots">
+              {snapshot.speedKnots.toFixed(1)} kt
             </span>
           </div>
           <div className="metric-hero-row">
-            <span className="metric-hero mono" data-testid="speed-kmh">
+            <span className="metric-hero num" data-testid="speed-kmh">
               {snapshot.speedKmh.toFixed(1)}
             </span>
-            <span className="metric-unit">KM/H</span>
+            <span className="metric-unit">km/h</span>
           </div>
           <MetricBar percent={speedPct} tone="accent" height={7} />
-          <div className="scale-caption mono">
+          <div className="scale-caption num">
             <span>0</span>
             <span>80</span>
-            <span>{DEFAULT_THRESHOLDS.speedMaxKmh} KM/H</span>
+            <span>{DEFAULT_THRESHOLDS.speedMaxKmh} km/h</span>
           </div>
         </div>
 
@@ -64,24 +64,24 @@ export const SpeedThrottleCard: React.FC<SpeedThrottleCardProps> = ({
 
         <div className="metric-block">
           <div className="metric-head">
-            <span className="metric-label">THROTTLE SERVO</span>
+            <span className="metric-label">Throttle</span>
             <button
               type="button"
               className={isSw ? 'inline-toggle is-active' : 'inline-toggle'}
               onClick={() => onSetAuthority(isSw ? 'HW_KNOB' : 'SW_OVERRIDE')}
               data-testid="throttle-authority-btn"
             >
-              {isSw ? <Sliders size={11} /> : <Lock size={11} />}
-              <span>{isSw ? 'SW ACTIVE' : 'SW LOCKED'}</span>
+              {isSw ? <Sliders size={12} /> : <Lock size={12} />}
+              <span>{isSw ? 'Override On' : 'Unlock Override'}</span>
             </button>
           </div>
           <div className="metric-hero-row">
-            <span className="metric-hero mono" data-testid="throttle-pct">
+            <span className="metric-hero num" data-testid="throttle-pct">
               {snapshot.throttlePercent.toFixed(0)}
             </span>
             <span className="metric-unit">%</span>
-            <span className="metric-pwm mono" data-testid="throttle-us">
-              {snapshot.throttleUs} µS
+            <span className="metric-pwm num" data-testid="throttle-us">
+              {snapshot.throttleUs} µs
             </span>
           </div>
 
@@ -91,7 +91,7 @@ export const SpeedThrottleCard: React.FC<SpeedThrottleCardProps> = ({
             height={7}
             markers={
               isSw
-                ? [{ percent: knobPct, tone: 'go', title: `HW KNOB ${snapshot.knobUs} µS` }]
+                ? [{ percent: knobPct, tone: 'go', title: `Physical knob ${snapshot.knobUs} µs` }]
                 : []
             }
           />
@@ -109,10 +109,10 @@ export const SpeedThrottleCard: React.FC<SpeedThrottleCardProps> = ({
             data-testid="throttle-slider"
           />
 
-          <div className="scale-caption mono">
-            <span>IDLE {snapshot.knobIdleUs}</span>
-            <span>KNOB {snapshot.knobUs}</span>
-            <span>MAX {snapshot.throttleMaxUs}</span>
+          <div className="scale-caption num">
+            <span>Idle {snapshot.knobIdleUs} µs</span>
+            <span>Knob {snapshot.knobUs} µs</span>
+            <span>Max {snapshot.throttleMaxUs} µs</span>
           </div>
         </div>
       </div>

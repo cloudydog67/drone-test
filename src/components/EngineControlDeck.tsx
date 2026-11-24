@@ -1,7 +1,6 @@
 import React from 'react';
 import { Flame, Shield, Zap } from 'lucide-react';
 import { PanelCard } from './ui/PanelCard';
-import { StatusPill } from './ui/StatusPill';
 import { MomentaryButton } from './ui/MomentaryButton';
 import type { TelemetrySnapshot, TelemetrySource } from '../telemetry/telemetryTypes';
 
@@ -37,14 +36,9 @@ export const EngineControlDeck: React.FC<EngineControlDeckProps> = ({
 
   return (
     <PanelCard
-      title="ENGINE CONTROL & INTERLOCKS"
+      title="Engine Controls"
       testId="control-deck-card"
-      badge={
-        <StatusPill
-          label={`RUN ${formatRunTime(snapshot.runTimeSeconds)}`}
-          tone="neutral"
-        />
-      }
+      badge={<span className="runtime-label num">Run time {formatRunTime(snapshot.runTimeSeconds)}</span>}
     >
       <div className="control-deck-layout">
         <div className="control-switches-col">
@@ -60,9 +54,9 @@ export const EngineControlDeck: React.FC<EngineControlDeckProps> = ({
             >
               <Shield size={16} />
               <div className="btn-label-stack">
-                <span className="btn-main">{interlocks.armed ? 'ARMED' : 'ARM STAND'}</span>
+                <span className="btn-main">{interlocks.armed ? 'Armed' : 'Arm System'}</span>
                 <span className="btn-sub">
-                  {interlocks.armed ? 'CLICK TO DISARM' : canArm ? 'INTERLOCKS GO' : 'CHECK IDLE/LINK'}
+                  {interlocks.armed ? 'Click to disarm' : canArm ? 'Ready to arm' : 'Knob must be idle'}
                 </span>
               </div>
             </button>
@@ -79,10 +73,10 @@ export const EngineControlDeck: React.FC<EngineControlDeckProps> = ({
               <Flame size={16} />
               <div className="btn-label-stack">
                 <span className="btn-main">
-                  {interlocks.ignitionOn ? 'CDI ON' : 'CDI OFF'}
+                  {interlocks.ignitionOn ? 'Ignition On' : 'Ignition Off'}
                 </span>
                 <span className="btn-sub">
-                  {interlocks.ignitionOn ? 'CLICK TO KILL SPARK' : 'REQUIRES ARMED'}
+                  {interlocks.ignitionOn ? 'Click to cut spark' : 'Arm system first'}
                 </span>
               </div>
             </button>
@@ -90,16 +84,16 @@ export const EngineControlDeck: React.FC<EngineControlDeckProps> = ({
 
           <div className="esp-inputs-panel">
             <div className="esp-input-row">
-              <span className="substat-label">CTRL BTN A (CDI)</span>
-              <span className="mono esp-val">{interlocks.buttonACdi}</span>
+              <span className="substat-label">Button A (CDI)</span>
+              <span className="esp-val">{interlocks.buttonACdi === 'DOWN' ? 'Pressed' : 'Released'}</span>
             </div>
             <div className="esp-input-row">
-              <span className="substat-label">CTRL BTN B (START)</span>
-              <span className="mono esp-val">{interlocks.buttonBStarter}</span>
+              <span className="substat-label">Button B (Starter)</span>
+              <span className="esp-val">{interlocks.buttonBStarter === 'DOWN' ? 'Pressed' : 'Released'}</span>
             </div>
             <div className="esp-input-row">
-              <span className="substat-label">HW KNOB PWM</span>
-              <span className="mono esp-val">{snapshot.knobUs} µS</span>
+              <span className="substat-label">Physical Knob</span>
+              <span className="esp-val num">{snapshot.knobUs} µs</span>
             </div>
             {sourceMode === 'SIM' && (
               <input
@@ -126,13 +120,13 @@ export const EngineControlDeck: React.FC<EngineControlDeckProps> = ({
             className="starter-circle"
             testId="starter-btn"
           >
-            <Zap size={24} />
+            <Zap size={22} />
             <span className="starter-title">
-              {interlocks.starterCranking ? 'CRANKING' : 'HOLD'}
+              {interlocks.starterCranking ? 'Cranking' : 'Starter'}
             </span>
-            <span className="starter-sub">STARTER</span>
+            <span className="starter-sub">Hold to crank</span>
           </MomentaryButton>
-          <span className="starter-note">MOMENTARY • 0% THR IDLES ONLY</span>
+          <span className="starter-note">0% throttle idles only</span>
         </div>
       </div>
     </PanelCard>
