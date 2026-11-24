@@ -452,13 +452,13 @@ body,
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-rows: minmax(0, 0.94fr) minmax(0, 1.06fr);
+  grid-template-rows: minmax(0, 1.04fr) minmax(0, 0.96fr);
   gap: 12px;
 }
 
 .telemetry-row {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.24fr) repeat(3, minmax(0, 1fr));
   gap: 12px;
   min-height: 0;
 }
@@ -570,12 +570,15 @@ body,
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
+  gap: 4px;
   min-height: 0;
 }
 
 .rpm-arc-svg {
   width: 100%;
-  max-width: 214px;
+  height: 100%;
+  max-width: 340px;
+  min-height: 0;
   flex: 1;
 }
 
